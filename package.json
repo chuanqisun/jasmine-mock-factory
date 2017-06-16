@@ -1,7 +1,7 @@
 {
   "name": "mock-factory",
-  "version": "1.0.0",
-  "description": "A jasmine helper for creating mocked classes",
+  "version": "1.0.1",
+  "description": "A Jasmine helper for creating mocked classes",
   "license": "MIT",
   "author": "Chuanqi Sun",
   "scripts": {
@@ -13,13 +13,15 @@
     "type": "git",
     "url": "https://github.com/henrysun918/mock-factory.git"
   },
+  "dependencies": {
+    "@types/jasmine": "2.5.45"
+  },
   "peerDependencies": {
     "jasmine-core": "~2.6.2"
   },
   "devDependencies": {
     "typescript": "~2.3.3",
     "jasmine-core": "~2.6.2",
-    "@types/jasmine": "2.5.45",
     "@angular/core": "^4.0.0",
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
