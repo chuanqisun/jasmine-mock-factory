@@ -51,7 +51,7 @@ export class MockFactory {
         if (blueprint['prototype']) {
             prototype = blueprint['prototype'];
         } else {
-            prototype = Object.getPrototypeOf(blueprint);
+            prototype = blueprint as T;
         }
 
         const mockBase = new DynamicMockBase(prototype);
