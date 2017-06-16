@@ -14,4 +14,8 @@ before_script:
 
 script:
   - ng lint
-  - ng test -sr
+  - ng test -sr -cc
+
+after_success:
+  - npm install -g codeclimate-test-reporter
+  - codeclimate-test-reporter < coverage/lcov.info

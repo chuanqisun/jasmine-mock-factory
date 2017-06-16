@@ -9,7 +9,6 @@ module.exports = function (config) {
     testingBrowsers = ['Chrome', 'Firefox'];
   }
 
-
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular/cli'],
@@ -17,11 +16,16 @@ module.exports = function (config) {
       require('karma-jasmine'),
       require('karma-chrome-launcher'),
       require('karma-firefox-launcher'),
+      require('karma-coverage-istanbul-reporter'),
       require('karma-jasmine-html-reporter'),
       require('@angular/cli/plugins/karma')
     ],
     client:{
       clearContext: false // leave Jasmine Spec Runner output visible in browser
+    },
+    coverageIstanbulReporter: {
+      reports: [ 'html', 'lcovonly' ],
+      fixWebpackSourcePaths: true
     },
     reporters: ['progress', 'kjhtml'],
     port: 9876,
