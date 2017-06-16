@@ -1,0 +1,12 @@
+#.travis.yml
+
+language: node_js
+node_js:
+  - "6.10"
+
+before_script:
+  - npm install -g @angular/cli
+
+script:
+  - ng lint
+  - ng test
