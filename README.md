@@ -45,8 +45,8 @@ const mockInstance = MockFactory.create(realInstance);
 ### Using a mock
 `MockFactory.create()` will return an object with the same interface as the original object. You can invoke methods and get/set properties on this object. 
 
- * All the public and private methods will have an empty jasmine.Spy as the initial value. 
- * All the public and private properties will have `undefined` as the initial value.
+ * All the public and private methods will have a jasmine.Spy as the initial value. The Spy cannot be overwritten.
+ * All the public and private properties will have `undefined` as the initial value. The value can be overwritten with anything.
  
 ### Examples
 ```
