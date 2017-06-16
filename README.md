@@ -4,6 +4,22 @@
 
 A Jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
 
+## Quick Start
+
+```TypeScript
+import { SomeClass } from 'some-library';
+import { MockFactory} from 'jasmine-mock-factory';
+
+it('should pass', () => {
+    const mockInstance = MockFactory.create(SomeClass);
+    mockInstance.doSomething.and.returnValue('awesome!');
+
+    mockInstance.doSomething();  // returns 'awesome!'
+
+    expect(mockInstance.doSomething).toHaveBeenCalled();
+}
+```
+
 ## Prerequisite
 
 This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
@@ -14,18 +30,20 @@ This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/Java
 
 ## Usage
 ### Install
-`npm install mock-factory --save-dev`
+```Shell
+npm install jasmine-mock-factory --save-dev
+```
 
 ### Import
 Import the library with ES6 Module Syntax:
-```
-import { MockFactory } from 'mock-factory'
+```TypeScript
+import { MockFactory } from 'jasmine-mock-factory'
 ```
 
 ### Creating a mock
 
 #### From a TypeScript class
-```
+```TypeScript
 class RealClass {
   // This is a typescript class
 }
@@ -36,7 +54,7 @@ const mockInstance = MockFactory.create(RealClass);
 ```
 
 #### From an instance of a class
-```
+```TypeScript
 const realInstance: RealInterface;
 
 ...
@@ -51,7 +69,7 @@ const mockInstance = MockFactory.create(realInstance);
  * All the public and private properties will have `undefined` as the initial value. The value can be overwritten with anything.
  
 ### Examples
-```
+```TypeScript
 class RealClass {
   public doSomething(...arg: any[]) { ... }
   public someProperty = 'whatever';
