@@ -1,10 +1,10 @@
 # MockFactory
 
-A jasmine test until that creates a mock object based on a blueprint that is either a typescript class or an instance of a class.
+A jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
 
-## Running unit tests
+## Prerequisite
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains un-compiled `*.ts` files which must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
 
 ## Usage
 ### Install
@@ -44,3 +44,8 @@ const mockObject = MockFactory.create(someInstance);
  * All the public and private methods will have an empty jasmine.Spy as the initial value. 
  * All the public and private properties will have `undefined` as the initial value.
 
+## Develope
+This project is built with [Angular CLI](https://cli.angular.io/)
+
+### Running unit tests
+Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
