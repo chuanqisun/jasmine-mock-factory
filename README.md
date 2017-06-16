@@ -1,28 +1,78 @@
 # MockFactory
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.1.0.
+A Jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
 
-## Development server
+## Prerequisite
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
 
-## Code scaffolding
+This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains un-compiled `*.ts` files which must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|module`.
 
-## Build
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+## Usage
+### Install
+`npm install mock-factory --save-dev`
 
-## Running unit tests
+### Import
+Import the library with ES6 Module Syntax:
+```
+import { MockFactory } from 'mock-factory'
+```
 
+### Creating a mock
+
+#### From a TypeScript class
+```
+class RealClass {
+  // This is a typescript class
+}
+
+...
+
+const mockInstance = MockFactory.create(RealClass);
+```
+
+#### From an instance of a class
+```
+const realInstance: RealInterface;
+
+...
+
+const mockInstance = MockFactory.create(realInstance);
+```
+
+### Using a mock
+`MockFactory.create()` will return an object with the same interface as the original object. You can invoke methods and get/set properties on this object. 
+
+ * All the public and private methods will have a jasmine.Spy as the initial value. The Spy cannot be overwritten.
+ * All the public and private properties will have `undefined` as the initial value. The value can be overwritten with anything.
+ 
+### Examples
+```
+class RealClass {
+  public doSomething(...arg: any[]) { ... }
+  public someProperty = 'whatever';
+}
+
+const mockInstance = MockFactory.create(RealClass);
+
+// get, set property
+expect(mockInstance.someProperty).toBeUndefined();
+mockInstance.someProperty = 'hello';
+expect(mockInstance.someProperty).toBe('hello');
+
+// use function spy
+expect(mockInstance.doSomething).not.toHaveBeenCalled();
+
+(mockInstance.doSomething as jasmine.Spy).and.returnValue('awesome!');
+
+expect(mockInstance.doSomething(42)).toBe('awesome!');
+expect(mockInstance.doSomething).toHaveBeenCalledWith(42);
+```
+
+## Develope
+This project is built with [Angular CLI](https://cli.angular.io/)
+
+### Running unit tests
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
