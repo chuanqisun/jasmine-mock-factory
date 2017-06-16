@@ -2,7 +2,7 @@
 
 [![Build Status](https://api.travis-ci.org/henrysun918/jasmine-mock-factory.svg?branch=master)](https://travis-ci.org/henrysun918/jasmine-mock-factory) [![Coverage Status](https://coveralls.io/repos/github/henrysun918/jasmine-mock-factory/badge.svg?branch=master)](https://coveralls.io/github/henrysun918/jasmine-mock-factory?branch=master)
 
-A Jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
+A Jasmine test util that uses a TypeScript class or an instance of a class to create a mock instance of that class.
 
 ## Quick Start
 
