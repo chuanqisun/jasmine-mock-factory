@@ -1,6 +1,6 @@
 {
   "name": "jasmine-mock-factory",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Jasmine helper for creating mocked classes",
   "license": "MIT",
   "author": "Chuanqi Sun",
@@ -11,7 +11,7 @@
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/henrysun918/mock-factory.git"
+    "url": "https://github.com/henrysun918/jasmine-mock-factory.git"
   },
   "dependencies": {
     "@types/jasmine": "2.5.45"
