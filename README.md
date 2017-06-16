@@ -1,10 +1,14 @@
 # MockFactory
 
-A jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
+A Jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
 
 ## Prerequisite
 
+This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
+
 This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains un-compiled `*.ts` files which must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
+
+
 
 ## Usage
 ### Install
@@ -20,22 +24,22 @@ import { MockFactory } from 'mock-factory'
 
 #### From a TypeScript class
 ```
-class SomeClass {
+class RealClass {
   // This is a typescript class
 }
 
 ...
 
-const mockObject = MockFactory.create(SomeClass);
+const mockInstance = MockFactory.create(RealClass);
 ```
 
 #### From an instance of a class
 ```
-const someInstance: SomeInterface;
+const realInstance: RealInterface;
 
 ...
 
-const mockObject = MockFactory.create(someInstance);
+const mockInstance = MockFactory.create(realInstance);
 ```
 
 ### Using a mock
@@ -43,6 +47,29 @@ const mockObject = MockFactory.create(someInstance);
 
  * All the public and private methods will have an empty jasmine.Spy as the initial value. 
  * All the public and private properties will have `undefined` as the initial value.
+ 
+### Examples
+```
+class RealClass {
+  public doSomething(...arg: any[]) { ... }
+  public someProperty = 'whatever';
+}
+
+const mockInstance = MockFactory.create(RealClass);
+
+// get, set property
+expect(mockInstance.someProperty).toBeUndefined();
+mockInstance.someProperty = 'hello';
+expect(mockInstance.someProperty).toBe('hello');
+
+// use function spy
+expect(mockInstance.doSomething).not.toHaveBeenCalled();
+
+(mockInstance.doSomething as jasmine.Spy).and.returnValue('awesome!');
+
+expect(mockInstance.doSomething(42)).toBe('awesome!');
+expect(mockInstance.doSomething).toHaveBeenCalledWith(42);
+```
 
 ## Develope
 This project is built with [Angular CLI](https://cli.angular.io/)
