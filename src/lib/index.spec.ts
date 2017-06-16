@@ -4,7 +4,6 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-import { Router } from '@angular/Router';
 import { MockFactory } from './index';
 
 interface IClass1 {

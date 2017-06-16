@@ -9,7 +9,10 @@
     "lint": "ng lint --type-check"
   },
   "private": false,
-
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/henrysun918/mock-factory.git"
+  },
   "peerDependencies": {
     "jasmine-core": "~2.6.2"
   },
@@ -17,24 +20,12 @@
     "typescript": "~2.3.3",
     "jasmine-core": "~2.6.2",
     "@types/jasmine": "2.5.45",
-
-    "@angular/animations": "^4.0.0",
-    "@angular/common": "^4.0.0",
-    "@angular/compiler": "^4.0.0",
     "@angular/core": "^4.0.0",
-    "@angular/forms": "^4.0.0",
-    "@angular/http": "^4.0.0",
-    "@angular/platform-browser": "^4.0.0",
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
-    "core-js": "^2.4.1",
-    "rxjs": "^5.1.0",
-    "zone.js": "^0.8.4",
-
     "@angular/cli": "1.1.0",
     "@angular/compiler-cli": "^4.0.0",
     "@angular/language-service": "^4.0.0",
-    "@types/node": "~6.0.60",
     "codelyzer": "~3.0.1",
     "jasmine-spec-reporter": "~4.1.0",
     "karma": "~1.7.0",
