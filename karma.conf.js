@@ -2,6 +2,14 @@
 // https://karma-runner.github.io/0.13/config/configuration-file.html
 
 module.exports = function (config) {
+  var testingBrowsers = [];
+  if (process.env.TRAVIS) {
+    testingBrowsers = ['Firefox']
+  } else {
+    testingBrowsers = ['Chrome', 'Firefox'];
+  }
+
+
   config.set({
     basePath: '',
     frameworks: ['jasmine', '@angular/cli'],
@@ -20,7 +28,7 @@ module.exports = function (config) {
     colors: true,
     logLevel: config.LOG_INFO,
     autoWatch: true,
-    browsers: ['Firefox'],
+    browsers: testingBrowsers,
     singleRun: false
   });
 };
