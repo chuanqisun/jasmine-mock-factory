@@ -1,28 +1,46 @@
 # MockFactory
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 1.1.0.
-
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+A jasmine test until that creates a mock object based on a blueprint that is either a typescript class or an instance of a class.
 
 ## Running unit tests
 
 Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
 
-## Running end-to-end tests
+## Usage
+### Install
+`npm install mock-factory --save-dev`
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
+### Import
+Import the library with ES6 Module Syntax:
+```
+import { MockFactory } from 'mock-factory'
+```
 
-## Further help
+### Creating a mock
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+#### From a TypeScript class
+```
+class SomeClass {
+  // This is a typescript class
+}
+
+...
+
+const mockObject = MockFactory.create(SomeClass);
+```
+
+#### From an instance of a class
+```
+const someInstance: SomeInterface;
+
+...
+
+const mockObject = MockFactory.create(someInstance);
+```
+
+### Using a mock
+`MockFactory.create()` will return an object with the same interface as the original object. You can invoke methods and get/set properties on this object. 
+
+ * All the public and private methods will have an empty jasmine.Spy as the initial value. 
+ * All the public and private properties will have `undefined` as the initial value.
+
