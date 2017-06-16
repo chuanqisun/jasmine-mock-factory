@@ -41,10 +41,12 @@ class Class1 implements IClass1 {
     ) {}
 }
 
+class Class2 extends Class1 { }
+
 describe('MockFactory', () => {
     let mockClass1Instance: IClass1;
 
-    describe('mocking a class using typescript class', () => {
+    describe('mocking a class using a typescript class', () => {
 
         beforeEach(() => {
             mockClass1Instance = MockFactory.create(Class1);
@@ -53,9 +55,27 @@ describe('MockFactory', () => {
         runSharedSpecs();
     });
 
+    describe('mocking an inherited class using an inherited typescript class', () => {
+
+        beforeEach(() => {
+            mockClass1Instance = MockFactory.create(Class2);
+        });
+
+        runSharedSpecs();
+    });
+
     describe('mocking an interface using an instance', () => {
         beforeEach(() => {
             const realInstance = new Class1('value-1');
+            mockClass1Instance = MockFactory.create(realInstance);
+        });
+
+        runSharedSpecs();
+    });
+
+    describe('mocking an inherited interface using an inherited instance', () => {
+        beforeEach(() => {
+            const realInstance = new Class2('value-1');
             mockClass1Instance = MockFactory.create(realInstance);
         });
 
