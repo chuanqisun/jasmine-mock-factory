@@ -55,7 +55,7 @@ const mockInstance = MockFactory.create(RealClass);
 
 #### From an instance of a class
 ```TypeScript
-const realInstance: RealInterface;
+const realInstance: RealInterface = new RealClass();
 
 ...
 
