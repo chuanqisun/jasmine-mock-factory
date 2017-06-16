@@ -1,4 +1,4 @@
-# MockFactory
+# Jasmine Mock Factory
 
 A Jasmine test util that uses a TyoeScript class or an instance of a class to create a mock instance of that class.
 
