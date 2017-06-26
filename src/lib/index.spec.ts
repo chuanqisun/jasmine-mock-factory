@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-import { MockFactory } from './index';
+import { MockFactory, Mock } from './index';
 
 interface IClass1 {
     publicProperty1: string;
@@ -17,13 +17,20 @@ interface IClass1 {
 class Class1 implements IClass1 {
     private privateProperty1: string;
     private privateProperty2 = 'value-a1';
-    private settablePropertyInternal = '';
 
     public get gettableProperty1() {
         return 'value-c1';
     }
 
     public set settableProperty1(value: string) {
+        // noop
+    }
+
+    public get getSetProperty1() {
+        return 'value-d1';
+    }
+
+    public set getSetProperty1(value: string) {
         // noop
     }
 
@@ -44,7 +51,7 @@ class Class1 implements IClass1 {
 class Class2 extends Class1 { }
 
 describe('MockFactory', () => {
-    let mockClass1Instance: IClass1;
+    let mockClass1Instance: Mock<Class1>;
 
     describe('mocking a class using a typescript class', () => {
 
@@ -87,6 +94,7 @@ describe('MockFactory', () => {
             expect(mockClass1Instance.publicProperty1).toBeUndefined();
             expect(mockClass1Instance.publicProperty2).toBeUndefined();
             expect(mockClass1Instance.gettableProperty1).toBeUndefined();
+            expect(mockClass1Instance.getSetProperty1).toBeUndefined();
             expect((mockClass1Instance as any).privateProperty1).toBeUndefined();
             expect((mockClass1Instance as any).privateProperty2).toBeUndefined();
             expect((mockClass1Instance as any).nonExistProperty).toBeUndefined();
@@ -99,11 +107,17 @@ describe('MockFactory', () => {
             expect(mockClass1Instance.publicProperty1).toBe('new-value-2');
             expect(mockClass1Instance.publicProperty1).toBe('new-value-2');
 
-            (mockClass1Instance as any).gettableProperty1 = 'new-value-1';
+            mockClass1Instance._getSpy('gettableProperty1')._get.and.returnValue('new-value-1');
             expect(mockClass1Instance.gettableProperty1).toBe('new-value-1');
-            (mockClass1Instance as any).gettableProperty1 = 'new-value-2';
+            mockClass1Instance._getSpy('gettableProperty1')._get.and.returnValue('new-value-2');
             expect(mockClass1Instance.gettableProperty1).toBe('new-value-2');
             expect(mockClass1Instance.gettableProperty1).toBe('new-value-2');
+
+            mockClass1Instance._getSpy('getSetProperty1')._get.and.returnValue('new-value-1');
+            expect(mockClass1Instance.getSetProperty1).toBe('new-value-1');
+            mockClass1Instance._getSpy('getSetProperty1')._get.and.returnValue('new-value-2');
+            expect(mockClass1Instance.getSetProperty1).toBe('new-value-2');
+            expect(mockClass1Instance.getSetProperty1).toBe('new-value-2');
 
             (mockClass1Instance as any).privateProperty1 = 'new-value-1';
             expect((mockClass1Instance as any).privateProperty1).toBe('new-value-1');
@@ -137,6 +151,17 @@ describe('MockFactory', () => {
             (mockClass1Instance as any).privateMethod('value-2');
             expect((mockClass1Instance as any).privateMethod).toHaveBeenCalledWith('value-2');
             expect((mockClass1Instance as any).privateMethod).toHaveBeenCalledTimes(2);
+
+            mockClass1Instance.getSetProperty1 = 'value-1';
+            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledWith('value-1');
+            mockClass1Instance.getSetProperty1 = 'value-2';
+            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledWith('value-2');
+            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledTimes(2);
+
+            const whatever1 = mockClass1Instance.getSetProperty1;
+            expect(mockClass1Instance._getSpy('getSetProperty1')._get).toHaveBeenCalled();
+            const whatever2 = mockClass1Instance.getSetProperty1;
+            expect(mockClass1Instance._getSpy('getSetProperty1')._get).toHaveBeenCalledTimes(2);
         });
 
         it('should allow spy setup before its first call', () => {
@@ -171,17 +196,34 @@ describe('MockFactory', () => {
             expect((mockClass1Instance as any).nonExistMethod).toHaveBeenCalledWith('value-1');
         });
 
-        it('should not allow spy to be replaced before its first call', () => {
-            expect(() => mockClass1Instance.publicMethod = jasmine.createSpy('newSpy')).toThrowError();
-            expect(() => (mockClass1Instance as any).privateMethod = jasmine.createSpy('newSpy')).toThrowError();
+        it('should allow spy to be replaced before its first call', () => {
+            const newSpy1 = jasmine.createSpy('newSpy')
+            expect(() => mockClass1Instance.publicMethod = newSpy1).not.toThrowError();
+            mockClass1Instance.publicMethod('value-1');
+
+            expect(newSpy1).toHaveBeenCalledWith('value-1');
+
+            const newSpy2 = jasmine.createSpy('newSpy')
+            expect(() => (mockClass1Instance as any).privateMethod = newSpy2).not.toThrowError();
+            (mockClass1Instance as any).privateMethod('value-1');
+
+            expect(newSpy2).toHaveBeenCalledWith('value-1');
         });
 
-        it('should not allow spy to be replaced after its first call', () => {
+        it('should allow spy to be replaced after its first call', () => {
             mockClass1Instance.publicMethod('whatever');
-            expect(() => mockClass1Instance.publicMethod = jasmine.createSpy('newSpy')).toThrowError();
+            const newSpy1 = jasmine.createSpy('newSpy')
+            expect(() => mockClass1Instance.publicMethod = newSpy1).not.toThrowError();
+            mockClass1Instance.publicMethod('value-1');
+
+            expect(newSpy1).toHaveBeenCalledWith('value-1');
 
             (mockClass1Instance as any).privateMethod('whatever');
-            expect(() => (mockClass1Instance as any).privateMethod = jasmine.createSpy('newSpy')).toThrowError();
+            const newSpy2 = jasmine.createSpy('newSpy')
+            expect(() => (mockClass1Instance as any).privateMethod = newSpy2).not.toThrowError();
+            (mockClass1Instance as any).privateMethod('value-1');
+
+            expect(newSpy2).toHaveBeenCalledWith('value-1');
         });
     }
 });
