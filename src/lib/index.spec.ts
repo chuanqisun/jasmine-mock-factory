@@ -129,12 +129,12 @@ describe('MockFactory', () => {
             expect(mockLocation.replace).toHaveBeenCalledWith('https://foobar.com');
         });
 
-        it('should spy getter on window', () => {
+        it('should spy getter on location', () => {
             mockLocation._spy.origin._get.and.returnValue('https://foobar.com');
             expect(mockLocation.origin).toBe('https://foobar.com');
         });
 
-        it('should spy setter on window', () => {
+        it('should spy setter on location', () => {
             mockLocation.host = 'foobar';
             expect(mockLocation._spy.host._set).toHaveBeenCalledWith('foobar');
         });
@@ -146,7 +146,7 @@ describe('MockFactory', () => {
             mockLocalStorage = MockFactory.create(localStorage);
         });
 
-        it('should mock functions on location', () => {
+        it('should mock functions on localStorage', () => {
             expect(mockLocalStorage._spy.getItem._func).not.toHaveBeenCalled();
             expect(mockLocalStorage.getItem).not.toHaveBeenCalled();
             mockLocalStorage.getItem('foobar');
@@ -154,7 +154,7 @@ describe('MockFactory', () => {
             expect(mockLocalStorage.getItem).toHaveBeenCalledWith('foobar');
         });
 
-        it('should spy getter on window', () => {
+        it('should spy getter on localStorage', () => {
             mockLocalStorage._spy.length._get.and.returnValue(42);
             expect(mockLocalStorage.length).toBe(42);
         });
