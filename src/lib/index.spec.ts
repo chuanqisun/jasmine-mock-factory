@@ -10,6 +10,7 @@ interface IClass1 {
     publicProperty1: string;
     publicProperty2: string;
     readonly gettableProperty1: string;
+    getSetProperty1: string;
     settableProperty1: string;
     publicMethod(arg1: string): number;
 }
@@ -51,12 +52,12 @@ class Class1 implements IClass1 {
 class Class2 extends Class1 { }
 
 describe('MockFactory', () => {
-    let mockClass1Instance: Mock<Class1>;
+    let mockInstance: Mock<Class1 | Class2 | IClass1>;
 
     describe('mocking a class using a typescript class', () => {
 
         beforeEach(() => {
-            mockClass1Instance = MockFactory.create(Class1);
+            mockInstance = MockFactory.create(Class1);
         });
 
         runSharedSpecs();
@@ -65,7 +66,7 @@ describe('MockFactory', () => {
     describe('mocking an inherited class using an inherited typescript class', () => {
 
         beforeEach(() => {
-            mockClass1Instance = MockFactory.create(Class2);
+            mockInstance = MockFactory.create(Class2);
         });
 
         runSharedSpecs();
@@ -74,7 +75,7 @@ describe('MockFactory', () => {
     describe('mocking an interface using an instance', () => {
         beforeEach(() => {
             const realInstance = new Class1('value-1');
-            mockClass1Instance = MockFactory.create(realInstance);
+            mockInstance = MockFactory.create(realInstance);
         });
 
         runSharedSpecs();
@@ -83,147 +84,222 @@ describe('MockFactory', () => {
     describe('mocking an inherited interface using an inherited instance', () => {
         beforeEach(() => {
             const realInstance = new Class2('value-1');
-            mockClass1Instance = MockFactory.create(realInstance);
+            mockInstance = MockFactory.create(realInstance);
         });
 
         runSharedSpecs();
     });
 
+    describe('mocking window object', () => {
+        let mockWindow: Mock<Window>;
+        beforeEach(() => {
+            mockWindow = MockFactory.create(window);
+        });
+
+        it('should mock functions on window', () => {
+            expect(mockWindow._spy.open._func).not.toHaveBeenCalled();
+            expect(mockWindow.open).not.toHaveBeenCalled();
+            mockWindow.open('https://foobar.com');
+            expect(mockWindow._spy.open._func).toHaveBeenCalledWith('https://foobar.com');
+            expect(mockWindow.open).toHaveBeenCalledWith('https://foobar.com');
+        });
+
+        it('should spy getter on window', () => {
+            mockWindow._spy.scrollY._get.and.returnValue(42);
+            expect(mockWindow.scrollY).toBe(42);
+        });
+
+        it('should spy setter on window', () => {
+            mockWindow.name = 'foobar';
+            expect(mockWindow._spy.name._set).toHaveBeenCalledWith('foobar');
+        });
+    });
+
+    describe('mocking location object', () => {
+        let mockLocation: Mock<Location>;
+        beforeEach(() => {
+            mockLocation = MockFactory.create(location);
+        });
+
+        it('should mock functions on location', () => {
+            expect(mockLocation._spy.replace._func).not.toHaveBeenCalled();
+            expect(mockLocation.replace).not.toHaveBeenCalled();
+            mockLocation.replace('https://foobar.com');
+            expect(mockLocation._spy.replace._func).toHaveBeenCalledWith('https://foobar.com');
+            expect(mockLocation.replace).toHaveBeenCalledWith('https://foobar.com');
+        });
+
+        it('should spy getter on window', () => {
+            mockLocation._spy.origin._get.and.returnValue('https://foobar.com');
+            expect(mockLocation.origin).toBe('https://foobar.com');
+        });
+
+        it('should spy setter on window', () => {
+            mockLocation.host = 'foobar';
+            expect(mockLocation._spy.host._set).toHaveBeenCalledWith('foobar');
+        });
+    });
+
+    describe('mocking localStorage object', () => {
+        let mockLocalStorage: Mock<Storage>;
+        beforeEach(() => {
+            mockLocalStorage = MockFactory.create(localStorage);
+        });
+
+        it('should mock functions on location', () => {
+            expect(mockLocalStorage._spy.getItem._func).not.toHaveBeenCalled();
+            expect(mockLocalStorage.getItem).not.toHaveBeenCalled();
+            mockLocalStorage.getItem('foobar');
+            expect(mockLocalStorage._spy.getItem._func).toHaveBeenCalledWith('foobar');
+            expect(mockLocalStorage.getItem).toHaveBeenCalledWith('foobar');
+        });
+
+        it('should spy getter on window', () => {
+            mockLocalStorage._spy.length._get.and.returnValue(42);
+            expect(mockLocalStorage.length).toBe(42);
+        });
+    });
+
     function runSharedSpecs() {
         it('should return undefined for all properties', () => {
-            expect(mockClass1Instance.publicProperty1).toBeUndefined();
-            expect(mockClass1Instance.publicProperty2).toBeUndefined();
-            expect(mockClass1Instance.gettableProperty1).toBeUndefined();
-            expect(mockClass1Instance.getSetProperty1).toBeUndefined();
-            expect((mockClass1Instance as any).privateProperty1).toBeUndefined();
-            expect((mockClass1Instance as any).privateProperty2).toBeUndefined();
-            expect((mockClass1Instance as any).nonExistProperty).toBeUndefined();
+            expect(mockInstance.publicProperty1).toBeUndefined();
+            expect(mockInstance.publicProperty2).toBeUndefined();
+            expect(mockInstance.gettableProperty1).toBeUndefined();
+            expect(mockInstance.getSetProperty1).toBeUndefined();
+            expect((mockInstance as any).privateProperty1).toBeUndefined();
+            expect((mockInstance as any).privateProperty2).toBeUndefined();
+            expect((mockInstance as any).nonExistProperty).toBeUndefined();
         });
 
         it('should persist modification for all properties', () => {
-            mockClass1Instance.publicProperty1 = 'new-value-1';
-            expect(mockClass1Instance.publicProperty1).toBe('new-value-1');
-            mockClass1Instance.publicProperty1 = 'new-value-2';
-            expect(mockClass1Instance.publicProperty1).toBe('new-value-2');
-            expect(mockClass1Instance.publicProperty1).toBe('new-value-2');
+            mockInstance.publicProperty1 = 'new-value-1';
+            expect(mockInstance.publicProperty1).toBe('new-value-1');
+            mockInstance.publicProperty1 = 'new-value-2';
+            expect(mockInstance.publicProperty1).toBe('new-value-2');
+            expect(mockInstance.publicProperty1).toBe('new-value-2');
 
-            mockClass1Instance._getSpy('gettableProperty1')._get.and.returnValue('new-value-1');
-            expect(mockClass1Instance.gettableProperty1).toBe('new-value-1');
-            mockClass1Instance._getSpy('gettableProperty1')._get.and.returnValue('new-value-2');
-            expect(mockClass1Instance.gettableProperty1).toBe('new-value-2');
-            expect(mockClass1Instance.gettableProperty1).toBe('new-value-2');
+            mockInstance._spy.gettableProperty1._get.and.returnValue('new-value-1');
+            expect(mockInstance.gettableProperty1).toBe('new-value-1');
+            mockInstance._spy.gettableProperty1._get.and.returnValue('new-value-2');
+            expect(mockInstance.gettableProperty1).toBe('new-value-2');
+            expect(mockInstance.gettableProperty1).toBe('new-value-2');
 
-            mockClass1Instance._getSpy('getSetProperty1')._get.and.returnValue('new-value-1');
-            expect(mockClass1Instance.getSetProperty1).toBe('new-value-1');
-            mockClass1Instance._getSpy('getSetProperty1')._get.and.returnValue('new-value-2');
-            expect(mockClass1Instance.getSetProperty1).toBe('new-value-2');
-            expect(mockClass1Instance.getSetProperty1).toBe('new-value-2');
+            mockInstance._spy.getSetProperty1._get.and.returnValue('new-value-1');
+            expect(mockInstance.getSetProperty1).toBe('new-value-1');
+            mockInstance._spy.getSetProperty1._get.and.returnValue('new-value-2');
+            expect(mockInstance.getSetProperty1).toBe('new-value-2');
+            expect(mockInstance.getSetProperty1).toBe('new-value-2');
 
-            (mockClass1Instance as any).privateProperty1 = 'new-value-1';
-            expect((mockClass1Instance as any).privateProperty1).toBe('new-value-1');
-            (mockClass1Instance as any).privateProperty1 = 'new-value-2';
-            expect((mockClass1Instance as any).privateProperty1).toBe('new-value-2');
-            expect((mockClass1Instance as any).privateProperty1).toBe('new-value-2');
+            (mockInstance as any).privateProperty1 = 'new-value-1';
+            expect((mockInstance as any).privateProperty1).toBe('new-value-1');
+            (mockInstance as any).privateProperty1 = 'new-value-2';
+            expect((mockInstance as any).privateProperty1).toBe('new-value-2');
+            expect((mockInstance as any).privateProperty1).toBe('new-value-2');
 
-            (mockClass1Instance as any).nonExistProperty = 'new-value-1';
-            expect((mockClass1Instance as any).nonExistProperty).toBe('new-value-1');
-            (mockClass1Instance as any).nonExistProperty = 'new-value-2';
-            expect((mockClass1Instance as any).nonExistProperty).toBe('new-value-2');
-            expect((mockClass1Instance as any).nonExistProperty).toBe('new-value-2');
+            (mockInstance as any).nonExistProperty = 'new-value-1';
+            expect((mockInstance as any).nonExistProperty).toBe('new-value-1');
+            (mockInstance as any).nonExistProperty = 'new-value-2';
+            expect((mockInstance as any).nonExistProperty).toBe('new-value-2');
+            expect((mockInstance as any).nonExistProperty).toBe('new-value-2');
         });
 
         it('should return spy for all functions', () => {
-            expect(mockClass1Instance.publicMethod).not.toHaveBeenCalled();
-            expect(mockClass1Instance.publicMethod).not.toHaveBeenCalled();
-            expect((mockClass1Instance as any).privateMethod).not.toHaveBeenCalled();
-            expect((mockClass1Instance as any).privateMethod).not.toHaveBeenCalled();
+            expect(mockInstance.publicMethod).not.toHaveBeenCalled();
+            expect(mockInstance.publicMethod).not.toHaveBeenCalled();
+            expect((mockInstance as any).privateMethod).not.toHaveBeenCalled();
+            expect((mockInstance as any).privateMethod).not.toHaveBeenCalled();
         });
 
         it('should register calls on each spy', () => {
-            mockClass1Instance.publicMethod('value-1');
-            expect(mockClass1Instance.publicMethod).toHaveBeenCalledWith('value-1');
-            mockClass1Instance.publicMethod('value-2');
-            expect(mockClass1Instance.publicMethod).toHaveBeenCalledWith('value-2');
-            expect(mockClass1Instance.publicMethod).toHaveBeenCalledTimes(2);
+            mockInstance.publicMethod('value-1');
+            expect(mockInstance.publicMethod).toHaveBeenCalledWith('value-1');
+            mockInstance.publicMethod('value-2');
+            expect(mockInstance.publicMethod).toHaveBeenCalledWith('value-2');
+            expect(mockInstance.publicMethod).toHaveBeenCalledTimes(2);
 
-            (mockClass1Instance as any).privateMethod('value-1');
-            expect((mockClass1Instance as any).privateMethod).toHaveBeenCalledWith('value-1');
-            (mockClass1Instance as any).privateMethod('value-2');
-            expect((mockClass1Instance as any).privateMethod).toHaveBeenCalledWith('value-2');
-            expect((mockClass1Instance as any).privateMethod).toHaveBeenCalledTimes(2);
+            (mockInstance as any).privateMethod('value-1');
+            expect((mockInstance as any).privateMethod).toHaveBeenCalledWith('value-1');
+            (mockInstance as any).privateMethod('value-2');
+            expect((mockInstance as any).privateMethod).toHaveBeenCalledWith('value-2');
+            expect((mockInstance as any).privateMethod).toHaveBeenCalledTimes(2);
 
-            mockClass1Instance.getSetProperty1 = 'value-1';
-            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledWith('value-1');
-            mockClass1Instance.getSetProperty1 = 'value-2';
-            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledWith('value-2');
-            expect(mockClass1Instance._getSpy('getSetProperty1')._set).toHaveBeenCalledTimes(2);
+            mockInstance.getSetProperty1 = 'value-1';
+            expect(mockInstance._spy.getSetProperty1._set).toHaveBeenCalledWith('value-1');
+            mockInstance.getSetProperty1 = 'value-2';
+            expect(mockInstance._spy.getSetProperty1._set).toHaveBeenCalledWith('value-2');
+            expect(mockInstance._spy.getSetProperty1._set).toHaveBeenCalledTimes(2);
 
-            const whatever1 = mockClass1Instance.getSetProperty1;
-            expect(mockClass1Instance._getSpy('getSetProperty1')._get).toHaveBeenCalled();
-            const whatever2 = mockClass1Instance.getSetProperty1;
-            expect(mockClass1Instance._getSpy('getSetProperty1')._get).toHaveBeenCalledTimes(2);
+            const whatever1 = mockInstance.getSetProperty1;
+            expect(mockInstance._spy.getSetProperty1._get).toHaveBeenCalled();
+            const whatever2 = mockInstance.getSetProperty1;
+            expect(mockInstance._spy.getSetProperty1._get).toHaveBeenCalledTimes(2);
         });
 
         it('should allow spy setup before its first call', () => {
-            (mockClass1Instance.publicMethod as jasmine.Spy).and.returnValue(999);
-            expect(mockClass1Instance.publicMethod('whatever')).toBe(999);
-            expect(mockClass1Instance.publicMethod('whatever')).toBe(999);
+            (mockInstance.publicMethod as jasmine.Spy).and.returnValue(999);
+            expect(mockInstance.publicMethod('whatever')).toBe(999);
+            expect(mockInstance.publicMethod('whatever')).toBe(999);
 
-            ((mockClass1Instance as any).privateMethod as jasmine.Spy).and.returnValue(999);
-            expect((mockClass1Instance as any).privateMethod('whatever')).toBe(999);
-            expect((mockClass1Instance as any).privateMethod('whatever')).toBe(999);
+            ((mockInstance as any).privateMethod as jasmine.Spy).and.returnValue(999);
+            expect((mockInstance as any).privateMethod('whatever')).toBe(999);
+            expect((mockInstance as any).privateMethod('whatever')).toBe(999);
         });
 
         it('should allow spy setup after its first call', () => {
-            mockClass1Instance.publicMethod('whatever');
+            mockInstance.publicMethod('whatever');
 
-            (mockClass1Instance.publicMethod as jasmine.Spy).and.returnValue(111);
-            expect(mockClass1Instance.publicMethod('whatever')).toBe(111);
-            (mockClass1Instance.publicMethod as jasmine.Spy).and.returnValue(999);
-            expect(mockClass1Instance.publicMethod('whatever')).toBe(999);
+            (mockInstance.publicMethod as jasmine.Spy).and.returnValue(111);
+            expect(mockInstance.publicMethod('whatever')).toBe(111);
+            (mockInstance.publicMethod as jasmine.Spy).and.returnValue(999);
+            expect(mockInstance.publicMethod('whatever')).toBe(999);
 
-            (mockClass1Instance as any).privateMethod('whatever');
+            (mockInstance as any).privateMethod('whatever');
 
-            ((mockClass1Instance as any).privateMethod as jasmine.Spy).and.returnValue(111);
-            expect((mockClass1Instance as any).privateMethod('whatever')).toBe(111);
-            ((mockClass1Instance as any).privateMethod as jasmine.Spy).and.returnValue(999);
-            expect((mockClass1Instance as any).privateMethod('whatever')).toBe(999);
+            ((mockInstance as any).privateMethod as jasmine.Spy).and.returnValue(111);
+            expect((mockInstance as any).privateMethod('whatever')).toBe(111);
+            ((mockInstance as any).privateMethod as jasmine.Spy).and.returnValue(999);
+            expect((mockInstance as any).privateMethod('whatever')).toBe(999);
         });
 
         it('should allow spy to be added with non-exist names', () => {
-            (mockClass1Instance as any).nonExistMethod = jasmine.createSpy('newSpy');
-            (mockClass1Instance as any).nonExistMethod('value-1');
-            expect((mockClass1Instance as any).nonExistMethod).toHaveBeenCalledWith('value-1');
+            (mockInstance as any).nonExistMethod = jasmine.createSpy('newSpy');
+            (mockInstance as any).nonExistMethod('value-1');
+            expect((mockInstance as any).nonExistMethod).toHaveBeenCalledWith('value-1');
         });
 
         it('should allow spy to be replaced before its first call', () => {
             const newSpy1 = jasmine.createSpy('newSpy')
-            expect(() => mockClass1Instance.publicMethod = newSpy1).not.toThrowError();
-            mockClass1Instance.publicMethod('value-1');
+            expect(() => mockInstance.publicMethod = newSpy1).not.toThrowError();
+            mockInstance.publicMethod('value-1');
 
             expect(newSpy1).toHaveBeenCalledWith('value-1');
 
             const newSpy2 = jasmine.createSpy('newSpy')
-            expect(() => (mockClass1Instance as any).privateMethod = newSpy2).not.toThrowError();
-            (mockClass1Instance as any).privateMethod('value-1');
+            expect(() => (mockInstance as any).privateMethod = newSpy2).not.toThrowError();
+            (mockInstance as any).privateMethod('value-1');
 
             expect(newSpy2).toHaveBeenCalledWith('value-1');
         });
 
         it('should allow spy to be replaced after its first call', () => {
-            mockClass1Instance.publicMethod('whatever');
+            mockInstance.publicMethod('whatever');
             const newSpy1 = jasmine.createSpy('newSpy')
-            expect(() => mockClass1Instance.publicMethod = newSpy1).not.toThrowError();
-            mockClass1Instance.publicMethod('value-1');
+            expect(() => mockInstance.publicMethod = newSpy1).not.toThrowError();
+            mockInstance.publicMethod('value-1');
 
             expect(newSpy1).toHaveBeenCalledWith('value-1');
 
-            (mockClass1Instance as any).privateMethod('whatever');
+            (mockInstance as any).privateMethod('whatever');
             const newSpy2 = jasmine.createSpy('newSpy')
-            expect(() => (mockClass1Instance as any).privateMethod = newSpy2).not.toThrowError();
-            (mockClass1Instance as any).privateMethod('value-1');
+            expect(() => (mockInstance as any).privateMethod = newSpy2).not.toThrowError();
+            (mockInstance as any).privateMethod('value-1');
 
             expect(newSpy2).toHaveBeenCalledWith('value-1');
+        });
+
+        it('should throw when _spy facade is modified', () => {
+            expect(() => mockInstance._spy = 42 as any).toThrow();
+            expect(() => mockInstance._spy.getSetProperty1 = {} as any).toThrow();
         });
     }
 });

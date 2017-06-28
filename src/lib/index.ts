@@ -1,7 +1,7 @@
 export declare type Mock<T> = T & SpyFacade<T>;
 
 export interface SpyFacade<T> {
-    _getSpy(propertyName: keyof T): SpiedMember;
+    _spy: Spied<T>;
 }
 
 export declare type Spied<T> = {
@@ -9,49 +9,38 @@ export declare type Spied<T> = {
 }
 
 export interface SpiedMember {
-    _func: jasmine.Spy;
-    _get: jasmine.Spy;
-    _set: jasmine.Spy;
+    _func?: jasmine.Spy;
+    _get?: jasmine.Spy;
+    _set?: jasmine.Spy;
 }
 
 interface Type<T> extends Function {
     new (...args: any[]): T;
 }
 
-interface SpyMap {
-    [key: string]: jasmine.Spy;
-}
-
-interface ValueMap {
-    [key: string]: any;
-}
-
-class DynamicMockBase<T extends object> {
-    public spyFacade = Object.create(null);
+class DynamicBase<T extends object> {
+    public stubProxy: Mock<T>;
     private stub = Object.create(null);
+    private spyProxy: T;
+    private spy = Object.create(null);
 
-    private spyMap: SpyMap = Object.create(null);
-    private valueMap: ValueMap = Object.create(null);
-    public handler = {
+    // create a spy before it is directly read/written
+    private stubProxyHandler = {
         get: (target: T, propertyName: keyof T, receiver) => {
-
-            if (propertyName === '_getSpy') {
-                return (propertyNameParam) => this.getSpy(propertyNameParam);
+            if (propertyName === '_spy') {
+                return this.spyProxy;
             }
 
-            this.initSpy(propertyName);
-
+            this.ensureSpy(propertyName);
 
             return this.stub[propertyName];
         },
-        // store whatever user wants in the value map
         set: (target, propertyName: keyof T, value, receiver) => {
-
-            if (propertyName === '_getSpy') {
-                throw Error('Cannot modify _getSpy. It is part of the MockFactory');
+            if (propertyName === '_spy') {
+                throw Error('Cannot modify _spy. It is part of the MockFactory');
             }
 
-            this.initSpy(propertyName);
+            this.ensureSpy(propertyName);
 
             this.stub[propertyName] = value;
 
@@ -59,17 +48,26 @@ class DynamicMockBase<T extends object> {
         },
     };
 
-    constructor(private prototype: T) {}
+    // create a spy before it is read from the spyFacade
+    private spyProxyHanlder = {
+        get: (target: T, propertyName: keyof T, receiver) => {
+            this.ensureSpy(propertyName);
 
-    public getSpy(propertyName: keyof T): SpiedMember {
-        this.initSpy(propertyName);
-
-        return this.spyFacade[propertyName];
+            return this.spy[propertyName];
+        },
+        set: (target, propertyName: keyof T, value, receiver) => {
+            throw Error('Cannot modify spies. They are part of the MockFactory');
+        },
     }
 
-    private initSpy(propertyName: keyof T): void {
+    constructor(private prototype: T) {
+        this.stubProxy =  new Proxy<Mock<T>>(Object.create(null) as any as Mock<T>, this.stubProxyHandler);
+        this.spyProxy = new Proxy(Object.create(null), this.spyProxyHanlder);
+    }
+
+    private ensureSpy(propertyName: keyof T): void {
         // create spy if needed
-        if (!this.spyFacade[propertyName]) {
+        if (!this.spy[propertyName]) {
             // if target is property
             if (typeof this.prototype[propertyName] !== 'function') {
                 // TODO __lookupGetter__ and __lookupSetter will be deprecated but Object.getPropertyDesriptor has not arrived.
@@ -77,16 +75,12 @@ class DynamicMockBase<T extends object> {
                 const hasGetter = !!(this.prototype as any).__lookupGetter__(propertyName); // this will lookup inherited getter/setter
                 const hasSetter = !!(this.prototype as any).__lookupSetter__(propertyName);
                 let descriptor = Object.getOwnPropertyDescriptor(this.prototype, propertyName); // this will return undefined on inherited getter/setter
-                if (!descriptor) {
-                    descriptor = {
-                        value: undefined,
-                        writable: true,
-                        enumerable: true,
-                        configurable: true,
-                    };
-                } else {
-                    descriptor.value = undefined;
-                }
+                descriptor = {
+                    value: undefined,
+                    writable: true,
+                    enumerable: true,
+                    configurable: true, // required by spyOnProperty
+                };
 
                 if (hasGetter) {
                     descriptor.get = () => {};
@@ -102,9 +96,8 @@ class DynamicMockBase<T extends object> {
 
                 Object.defineProperty(this.stub, propertyName, descriptor);
 
-                this.spyFacade[propertyName] = {
+                this.spy[propertyName] = {
                     _func: undefined,
-                    _value: undefined,
                     _get: hasGetter || (descriptor && descriptor.get) ? spyOnProperty(this.stub, propertyName, 'get') : undefined,
                     _set: hasSetter || (descriptor && descriptor.set) ? spyOnProperty(this.stub, propertyName, 'set') : undefined,
                 }
@@ -112,7 +105,7 @@ class DynamicMockBase<T extends object> {
             } else {
                 const spy = jasmine.createSpy(propertyName);
                 this.stub[propertyName] = spy;
-                this.spyFacade[propertyName] = {
+                this.spy[propertyName] = {
                     _func: spy,
                     _get: undefined,
                     _set: undefined,
@@ -124,18 +117,18 @@ class DynamicMockBase<T extends object> {
 
 export class MockFactory {
     /**
-     * create a mock object that has the identical interface with the class you passed in
+     * create a mock object that has the identical interface as the class you passed in
      */
     public static create<T extends object>(blueprint: Type<T> | T): Mock<T> {
         let prototype: T;
         if (blueprint['prototype']) {
+            // get the prototype for a TypeScript class
             prototype = blueprint['prototype'];
         } else {
             prototype = blueprint as T;
         }
 
-        const mockBase = new DynamicMockBase(prototype);
-        const proxy = new Proxy<Mock<T>>(mockBase as any as Mock<T>, mockBase.handler);
-        return proxy;
+        const dynamicBase = new DynamicBase(prototype);
+        return dynamicBase.stubProxy;
     }
 }
