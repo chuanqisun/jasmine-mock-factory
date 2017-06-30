@@ -76,8 +76,8 @@ class DynamicBase<T extends object> {
             if (typeof this.prototype[propertyName] !== 'function') {
                 // we add getters and setters to all properties to make the read and write spy-able
                 const descriptor = {
-                    get: () => {},
-                    set: (value) => {},
+                    get: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ () => {},
+                    set: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ (value) => {},
                     enumerable: true,
                     configurable: true, // required by spyOnProperty
                 };
