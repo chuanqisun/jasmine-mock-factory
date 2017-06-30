@@ -1,11 +1,15 @@
 export declare type Mock<T> = T & SpyFacade<T>;
 
 export interface SpyFacade<T> {
-    _spy: Spied<T>;
+    _spy: Spied<T> & SpiedAny;
 }
 
 export declare type Spied<T> = {
     [K in keyof T]: SpiedMember;
+}
+
+export interface SpiedAny {
+    [id: string]: SpiedMember
 }
 
 export interface SpiedMember {
@@ -85,11 +89,11 @@ class DynamicBase<T extends object> {
                 Object.defineProperty(this.stub, propertyName, descriptor);
 
                 // by default, let getter spy return whatever setter spy receives
-                const getterSpy = spyOnProperty(this.stub, propertyName, 'get');
-                const setterSpy = spyOnProperty(this.stub, propertyName, 'set');
-                setterSpy.and.callFake((value) => getterSpy.and.returnValue(value));
+                const getterSpy = spyOnProperty(this.stub, propertyName, 'get').and.callFake(() => this.spy[propertyName]._value);
+                const setterSpy = spyOnProperty(this.stub, propertyName, 'set').and.callFake(value => this.spy[propertyName]._value = value);
 
                 this.spy[propertyName] = {
+                    _value: undefined, // this is not on the public API, because _value will become meaningless once user customizes the spies.
                     _get: getterSpy,
                     _set: setterSpy,
                 }
