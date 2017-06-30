@@ -128,7 +128,7 @@ const mockLocation = MockFactory.create(location);
  * To access a getter spy, call `mockInstance._spy.property._get`.
  * To access a setter spy, call `mockInstance._spy.property._set`.
  * NOTE: modification to the properties will not be preserved after getter or setter spies are customized
- * NOTE: `expect(mockInstance.someProperty).toBe(...)` will trigger `mockInstance._spy.someProperty._get`. Design the sequence of your asserts to avoid stepping on your own foot.
+ * NOTE: `expect(mockInstance.someProperty).toBe(...)` will trigger `mockInstance._spy.someProperty._get`. Design the sequence of your assertions to avoid stepping on your own foot.
 ```TypeScript
   let temp = mockInstance.publicProperty;
   expect(mockInstance._spy.publicProperty._get).toHaveBeenCalled();
