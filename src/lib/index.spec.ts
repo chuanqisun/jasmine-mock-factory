@@ -48,11 +48,11 @@ class BaseClass implements IBaseClass {
         return 2;
     }
 
-    protected protectedMethod(arg1: string): number {
+    protected protectedMethod1(arg1: string): number {
         return 3;
     }
 
-    private privateMethod(arg1: string): number {
+    private privateMethod1(arg1: string): number {
         return 5;
     }
 }
@@ -166,7 +166,7 @@ describe('Using mocks', () => {
             mockWindow = MockFactory.create(window);
         });
 
-        it('should mock functions on window', () => {
+        it('should mock functions', () => {
             expect(mockWindow._spy.open._func).not.toHaveBeenCalled();
             expect(mockWindow.open).not.toHaveBeenCalled();
             mockWindow.open('https://foobar.com');
@@ -174,14 +174,19 @@ describe('Using mocks', () => {
             expect(mockWindow.open).toHaveBeenCalledWith('https://foobar.com');
         });
 
-        it('should spy getter on window', () => {
+        it('should spy getter', () => {
             mockWindow._spy.scrollY._get.and.returnValue(42);
             expect(mockWindow.scrollY).toBe(42);
         });
 
-        it('should spy setter on window', () => {
+        it('should spy setter', () => {
             mockWindow.name = 'foobar';
             expect(mockWindow._spy.name._set).toHaveBeenCalledWith('foobar');
+        });
+
+        it('should persist modification on properties', () => {
+            (mockWindow as any).document = 'foobar';
+            expect(mockWindow.document).toBe('foobar');
         });
     });
 
@@ -191,7 +196,7 @@ describe('Using mocks', () => {
             mockLocation = MockFactory.create(location);
         });
 
-        it('should mock functions on location', () => {
+        it('should mock functions', () => {
             expect(mockLocation._spy.replace._func).not.toHaveBeenCalled();
             expect(mockLocation.replace).not.toHaveBeenCalled();
             mockLocation.replace('https://foobar.com');
@@ -199,7 +204,7 @@ describe('Using mocks', () => {
             expect(mockLocation.replace).toHaveBeenCalledWith('https://foobar.com');
         });
 
-        it('should spy getter on location', () => {
+        it('should spy getter', () => {
             mockLocation._spy.origin._get.and.returnValue('https://foobar.com');
             expect(mockLocation.origin).toBe('https://foobar.com');
 
@@ -207,9 +212,14 @@ describe('Using mocks', () => {
             expect(mockLocation.search).toBe('?param=1');
         });
 
-        it('should spy setter on location', () => {
+        it('should spy setter', () => {
             mockLocation.host = 'foobar';
             expect(mockLocation._spy.host._set).toHaveBeenCalledWith('foobar');
+        });
+
+        it('should persist modification on properties', () => {
+            mockLocation.search = '?foo=bar';
+            expect(mockLocation.search).toBe('?foo=bar');
         });
     });
 
@@ -219,7 +229,7 @@ describe('Using mocks', () => {
             mockLocalStorage = MockFactory.create(localStorage);
         });
 
-        it('should mock functions on localStorage', () => {
+        it('should mock functions', () => {
             expect(mockLocalStorage._spy.getItem._func).not.toHaveBeenCalled();
             expect(mockLocalStorage.getItem).not.toHaveBeenCalled();
             mockLocalStorage.getItem('foobar');
@@ -227,369 +237,717 @@ describe('Using mocks', () => {
             expect(mockLocalStorage.getItem).toHaveBeenCalledWith('foobar');
         });
 
-        it('should spy getter on localStorage', () => {
+        it('should spy getter', () => {
             mockLocalStorage._spy.length._get.and.returnValue(42);
+            expect(mockLocalStorage.length).toBe(42);
+        });
+
+        it('should spy setter', () => {
+            (mockLocalStorage as any).length = 42;
+            expect(mockLocalStorage._spy.length._set).toHaveBeenCalledWith(42);
+        });
+
+        it('should persist modification on properties', () => {
+            (mockLocalStorage as any).length = 42;
             expect(mockLocalStorage.length).toBe(42);
         });
     });
 
     function runCommonSpecs() {
-        it('should return undefined for all public properties', () => {
-            expect(commonInstance.publicProperty1).toBeUndefined();
-            expect(commonInstance.publicProperty2).toBeUndefined();
-            expect(commonInstance.publicGetterProperty1).toBeUndefined();
-            expect(commonInstance.publicSetterProperty1).toBeUndefined();
-            expect(commonInstance.publicGetterSetterProperty1).toBeUndefined();
-
-            expect(commonInstance['publicProperty1']).toBeUndefined();
-            expect(commonInstance['publicProperty2']).toBeUndefined();
-            expect(commonInstance['publicGetterProperty1']).toBeUndefined();
-            expect(commonInstance['publicSetterProperty1']).toBeUndefined();
-            expect(commonInstance['publicGetterSetterProperty1']).toBeUndefined();
+        describe('meta', () => {
+            it('should not allow _spyFacade to be replaced', () => {
+                expect(() => commonInstance._spy = {} as any).toThrow();
+            });
         });
 
-        it('should return undefined for all protected properties', () => {
-            expect((commonInstance as any).protectedProperty1).toBeUndefined();
-            expect((commonInstance as any).protectedProperty2).toBeUndefined();
-            expect((commonInstance as any).protectedGetterProperty1).toBeUndefined();
-            expect((commonInstance as any).protectedSetterProperty1).toBeUndefined();
-            expect((commonInstance as any).protectedGetterSetterProperty1).toBeUndefined();
+        describe('properties', () => {
+            it('should return undefined for all public properties', () => {
+                expect(commonInstance.publicProperty1).toBeUndefined();
+                expect(commonInstance.publicProperty2).toBeUndefined();
+                expect(commonInstance.publicGetterProperty1).toBeUndefined();
+                expect(commonInstance.publicSetterProperty1).toBeUndefined();
+                expect(commonInstance.publicGetterSetterProperty1).toBeUndefined();
 
-            expect(commonInstance['protectedProperty1']).toBeUndefined();
-            expect(commonInstance['protectedProperty2']).toBeUndefined();
-            expect(commonInstance['protectedGetterProperty1']).toBeUndefined();
-            expect(commonInstance['protectedSetterProperty1']).toBeUndefined();
-            expect(commonInstance['protectedGetterSetterProperty1']).toBeUndefined();
+                expect(commonInstance['publicProperty1']).toBeUndefined();
+                expect(commonInstance['publicProperty2']).toBeUndefined();
+                expect(commonInstance['publicGetterProperty1']).toBeUndefined();
+                expect(commonInstance['publicSetterProperty1']).toBeUndefined();
+                expect(commonInstance['publicGetterSetterProperty1']).toBeUndefined();
+            });
+
+            it('should return undefined for all protected properties', () => {
+                expect((commonInstance as any).protectedProperty1).toBeUndefined();
+                expect((commonInstance as any).protectedProperty2).toBeUndefined();
+                expect((commonInstance as any).protectedGetterProperty1).toBeUndefined();
+                expect((commonInstance as any).protectedSetterProperty1).toBeUndefined();
+                expect((commonInstance as any).protectedGetterSetterProperty1).toBeUndefined();
+
+                expect(commonInstance['protectedProperty1']).toBeUndefined();
+                expect(commonInstance['protectedProperty2']).toBeUndefined();
+                expect(commonInstance['protectedGetterProperty1']).toBeUndefined();
+                expect(commonInstance['protectedSetterProperty1']).toBeUndefined();
+                expect(commonInstance['protectedGetterSetterProperty1']).toBeUndefined();
+            });
+
+            it('should return undefined for all private properties', () => {
+                expect((commonInstance as any).privateProperty1).toBeUndefined();
+                expect((commonInstance as any).privateProperty2).toBeUndefined();
+                expect((commonInstance as any).privateGetterProperty1).toBeUndefined();
+                expect((commonInstance as any).privateSetterProperty1).toBeUndefined();
+                expect((commonInstance as any).privateGetterSetterProperty1).toBeUndefined();
+
+                expect(commonInstance['privateProperty1']).toBeUndefined();
+                expect(commonInstance['privateProperty2']).toBeUndefined();
+                expect(commonInstance['privateGetterProperty1']).toBeUndefined();
+                expect(commonInstance['privateSetterProperty1']).toBeUndefined();
+                expect(commonInstance['privateGetterSetterProperty1']).toBeUndefined();
+            });
+
+            it('should return undefined for non-exist properties', () => {
+                expect((commonInstance as any).nonExistProperty).toBeUndefined();
+                expect(commonInstance['nonExistProperty']).toBeUndefined();
+            });
+
+            it('should persist first modifications on properties', () => {
+                commonInstance.publicProperty1 = 'new-value';
+                expect(commonInstance.publicProperty1).toBe('new-value');
+                (commonInstance as any).publicGetterProperty1 = 'new-value';
+                expect(commonInstance.publicGetterProperty1).toBe('new-value');
+                commonInstance.publicSetterProperty1 = 'new-value';
+                expect(commonInstance.publicSetterProperty1).toBe('new-value');
+                commonInstance.publicGetterSetterProperty1 = 'new-value';
+                expect(commonInstance.publicGetterSetterProperty1).toBe('new-value');
+
+                commonInstance['protectedProperty1'] = 'new-value';
+                expect(commonInstance['protectedProperty1']).toBe('new-value');
+                commonInstance['protectedGetterProperty1'] = 'new-value';
+                expect(commonInstance['protectedGetterProperty1']).toBe('new-value');
+                commonInstance['protectedSetterProperty1'] = 'new-value';
+                expect(commonInstance['protectedSetterProperty1']).toBe('new-value');
+                commonInstance['protectedGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value');
+
+                commonInstance['privateProperty1'] = 'new-value';
+                expect(commonInstance['privateProperty1']).toBe('new-value');
+                commonInstance['privateGetterProperty1'] = 'new-value';
+                expect(commonInstance['privateGetterProperty1']).toBe('new-value');
+                commonInstance['privateSetterProperty1'] = 'new-value';
+                expect(commonInstance['privateSetterProperty1']).toBe('new-value');
+                commonInstance['privateGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value');
+
+                commonInstance['nonExistProperty'] = 'new-value';
+                expect(commonInstance['nonExistProperty']).toBe('new-value');
+            });
+
+            it('should persist all modifications on properties', () => {
+                commonInstance.publicProperty1 = 'new-value-1';
+                commonInstance.publicProperty1 = 'new-value-2';
+                expect(commonInstance.publicProperty1).toBe('new-value-2');
+                (commonInstance as any).publicGetterProperty1 = 'new-value-1';
+                (commonInstance as any).publicGetterProperty1 = 'new-value-2';
+                expect(commonInstance.publicGetterProperty1).toBe('new-value-2');
+                commonInstance.publicSetterProperty1 = 'new-value-1';
+                commonInstance.publicSetterProperty1 = 'new-value-2';
+                expect(commonInstance.publicSetterProperty1).toBe('new-value-2');
+                commonInstance.publicGetterSetterProperty1 = 'new-value-1';
+                commonInstance.publicGetterSetterProperty1 = 'new-value-2';
+                expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-2');
+
+                commonInstance['protectedProperty1'] = 'new-value-1';
+                commonInstance['protectedProperty1'] = 'new-value-2';
+                expect(commonInstance['protectedProperty1']).toBe('new-value-2');
+                commonInstance['protectedGetterProperty1'] = 'new-value-1';
+                commonInstance['protectedGetterProperty1'] = 'new-value-2';
+                expect(commonInstance['protectedGetterProperty1']).toBe('new-value-2');
+                commonInstance['protectedSetterProperty1'] = 'new-value-1';
+                commonInstance['protectedSetterProperty1'] = 'new-value-2';
+                expect(commonInstance['protectedSetterProperty1']).toBe('new-value-2');
+                commonInstance['protectedGetterSetterProperty1'] = 'new-value-1';
+                commonInstance['protectedGetterSetterProperty1'] = 'new-value-2';
+                expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-2');
+
+                commonInstance['privateProperty1'] = 'new-value-1';
+                commonInstance['privateProperty1'] = 'new-value-2';
+                expect(commonInstance['privateProperty1']).toBe('new-value-2');
+                commonInstance['privateGetterProperty1'] = 'new-value-1';
+                commonInstance['privateGetterProperty1'] = 'new-value-2';
+                expect(commonInstance['privateGetterProperty1']).toBe('new-value-2');
+                commonInstance['privateSetterProperty1'] = 'new-value-1';
+                commonInstance['privateSetterProperty1'] = 'new-value-2';
+                expect(commonInstance['privateSetterProperty1']).toBe('new-value-2');
+                commonInstance['privateGetterSetterProperty1'] = 'new-value-1';
+                commonInstance['privateGetterSetterProperty1'] = 'new-value-2';
+                expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-2');
+
+                commonInstance['nonExistProperty'] = 'new-value-1';
+                commonInstance['nonExistProperty'] = 'new-value-2';
+                expect(commonInstance['nonExistProperty']).toBe('new-value-2');
+            });
+
+            it('should spy getters before they are used', () => {
+                expect(commonInstance._spy.publicProperty1._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterProperty1._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicSetterProperty1._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterSetterProperty1._get).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['protectedProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedSetterProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._get).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['privateProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateSetterProperty1']._get).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterSetterProperty1']._get).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['nonExistProperty']._get).not.toHaveBeenCalled();
+            });
+
+            it('should spy setters before they are used', () => {
+                expect(commonInstance._spy.publicProperty1._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterProperty1._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicSetterProperty1._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterSetterProperty1._set).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['protectedProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedSetterProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._set).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['privateProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateSetterProperty1']._set).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterSetterProperty1']._set).not.toHaveBeenCalled();
+
+                expect(commonInstance._spy['nonExistProperty']._set).not.toHaveBeenCalled();
+            });
+
+            it('should record calls on getters', () => {
+                let temp1 = commonInstance.publicProperty1;
+                temp1 = commonInstance.publicGetterProperty1;
+                temp1 = commonInstance.publicSetterProperty1;
+                temp1 = commonInstance.publicGetterSetterProperty1;
+                expect(commonInstance._spy.publicProperty1._get).toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterProperty1._get).toHaveBeenCalled();
+                expect(commonInstance._spy.publicSetterProperty1._get).toHaveBeenCalled();
+                expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalled();
+                temp1 = commonInstance.publicProperty1;
+                temp1 = commonInstance.publicGetterProperty1;
+                temp1 = commonInstance.publicSetterProperty1;
+                temp1 = commonInstance.publicGetterSetterProperty1;
+                expect(commonInstance._spy.publicProperty1._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicGetterProperty1._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicSetterProperty1._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalledTimes(2);
+
+                temp1 = commonInstance['protectedProperty1'];
+                temp1 = commonInstance['protectedGetterProperty1'];
+                temp1 = commonInstance['protectedSetterProperty1'];
+                temp1 = commonInstance['protectedGetterSetterProperty1'];
+                expect(commonInstance._spy['protectedProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['protectedSetterProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._get).toHaveBeenCalled();
+                temp1 = commonInstance['protectedProperty1'];
+                temp1 = commonInstance['protectedGetterProperty1'];
+                temp1 = commonInstance['protectedSetterProperty1'];
+                temp1 = commonInstance['protectedGetterSetterProperty1'];
+                expect(commonInstance._spy['protectedProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedGetterProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedSetterProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._get).toHaveBeenCalledTimes(2);
+
+                temp1 = commonInstance['privateProperty1'];
+                temp1 = commonInstance['privateGetterProperty1'];
+                temp1 = commonInstance['privateSetterProperty1'];
+                temp1 = commonInstance['privateGetterSetterProperty1'];
+                expect(commonInstance._spy['privateProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['privateSetterProperty1']._get).toHaveBeenCalled();
+                expect(commonInstance._spy['privateGetterSetterProperty1']._get).toHaveBeenCalled();
+                temp1 = commonInstance['privateProperty1'];
+                temp1 = commonInstance['privateGetterProperty1'];
+                temp1 = commonInstance['privateSetterProperty1'];
+                temp1 = commonInstance['privateGetterSetterProperty1'];
+                expect(commonInstance._spy['privateProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateGetterProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateSetterProperty1']._get).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateGetterSetterProperty1']._get).toHaveBeenCalledTimes(2);
+
+                temp1 = commonInstance['nonExistProperty'];
+                expect(commonInstance._spy['nonExistProperty']._get).toHaveBeenCalled();
+                temp1 = commonInstance['nonExistProperty'];
+                expect(commonInstance._spy['nonExistProperty']._get).toHaveBeenCalledTimes(2);
+            });
+
+            it('should record calls on setters', () => {
+                commonInstance.publicProperty1 = 'new-value';
+                (commonInstance as any).publicGetterProperty1 = 'new-value';
+                commonInstance.publicSetterProperty1 = 'new-value';
+                commonInstance.publicGetterSetterProperty1 = 'new-value';
+                expect(commonInstance._spy.publicProperty1._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy.publicGetterProperty1._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy.publicSetterProperty1._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledWith('new-value');
+                commonInstance.publicProperty1 = 'new-value';
+                (commonInstance as any).publicGetterProperty1 = 'new-value';
+                commonInstance.publicSetterProperty1 = 'new-value';
+                commonInstance.publicGetterSetterProperty1 = 'new-value';
+                expect(commonInstance._spy.publicProperty1._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicGetterProperty1._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicSetterProperty1._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledTimes(2);
+
+                commonInstance['protectedProperty1'] = 'new-value';
+                commonInstance['protectedGetterProperty1'] = 'new-value';
+                commonInstance['protectedSetterProperty1'] = 'new-value';
+                commonInstance['protectedGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance._spy['protectedProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['protectedGetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['protectedSetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                commonInstance['protectedProperty1'] = 'new-value';
+                commonInstance['protectedGetterProperty1'] = 'new-value';
+                commonInstance['protectedSetterProperty1'] = 'new-value';
+                commonInstance['protectedGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance._spy['protectedProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedGetterProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedSetterProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['protectedGetterSetterProperty1']._set).toHaveBeenCalledTimes(2);
+
+                commonInstance['privateProperty1'] = 'new-value';
+                commonInstance['privateGetterProperty1'] = 'new-value';
+                commonInstance['privateSetterProperty1'] = 'new-value';
+                commonInstance['privateGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance._spy['privateProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['privateGetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['privateSetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                expect(commonInstance._spy['privateGetterSetterProperty1']._set).toHaveBeenCalledWith('new-value');
+                commonInstance['privateProperty1'] = 'new-value';
+                commonInstance['privateGetterProperty1'] = 'new-value';
+                commonInstance['privateSetterProperty1'] = 'new-value';
+                commonInstance['privateGetterSetterProperty1'] = 'new-value';
+                expect(commonInstance._spy['privateProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateGetterProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateSetterProperty1']._set).toHaveBeenCalledTimes(2);
+                expect(commonInstance._spy['privateGetterSetterProperty1']._set).toHaveBeenCalledTimes(2);
+
+                commonInstance['nonExistProperty'] = 'new-value';
+                expect(commonInstance._spy['nonExistProperty']._set).toHaveBeenCalledWith('new-value');
+                commonInstance['nonExistProperty'] = 'new-value';
+                expect(commonInstance._spy['nonExistProperty']._set).toHaveBeenCalledTimes(2);
+            });
+
+            it('should modify results from getters before they are used', () => {
+                commonInstance._spy.publicProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicSetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
+                expect(commonInstance.publicProperty1).toBe('new-value-1');
+                expect(commonInstance.publicGetterProperty1).toBe('new-value-1');
+                expect(commonInstance.publicSetterProperty1).toBe('new-value-1');
+                expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-1');
+
+                commonInstance._spy['protectedProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                expect(commonInstance['protectedProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedGetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedSetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-1');
+
+                commonInstance._spy['privateProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                expect(commonInstance['privateProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateGetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateSetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-1');
+
+                commonInstance._spy['nonExistProperty']._get.and.returnValue('new-value-1');
+                expect(commonInstance['nonExistProperty']).toBe('new-value-1');
+            });
+
+            it('should modify results from getters after they are used', () => {
+                let temp = commonInstance.publicProperty1;
+                temp = commonInstance.publicGetterProperty1;
+                temp = commonInstance.publicSetterProperty1;
+                temp = commonInstance.publicGetterSetterProperty1;
+                commonInstance._spy.publicProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicSetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
+                expect(commonInstance.publicProperty1).toBe('new-value-1');
+                expect(commonInstance.publicGetterProperty1).toBe('new-value-1');
+                expect(commonInstance.publicSetterProperty1).toBe('new-value-1');
+                expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-1');
+
+                temp = commonInstance['protectedProperty1'];
+                temp = commonInstance['protectedGetterProperty1'];
+                temp = commonInstance['protectedSetterProperty1'];
+                temp = commonInstance['protectedGetterSetterProperty1'];
+                commonInstance._spy['protectedProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                expect(commonInstance['protectedProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedGetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedSetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-1');
+
+                temp = commonInstance['privateProperty1'];
+                temp = commonInstance['privateGetterProperty1'];
+                temp = commonInstance['privateSetterProperty1'];
+                temp = commonInstance['privateGetterSetterProperty1']
+                commonInstance._spy['privateProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                expect(commonInstance['privateProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateGetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateSetterProperty1']).toBe('new-value-1');
+                expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-1');
+
+                temp = commonInstance['nonExistProperty'];
+                commonInstance._spy['nonExistProperty']._get.and.returnValue('new-value-1');
+                expect(commonInstance['nonExistProperty']).toBe('new-value-1');
+            });
+
+            it('should re-modify results from getters', () => {
+                commonInstance._spy.publicProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicSetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
+                commonInstance._spy.publicProperty1._get.and.returnValue('new-value-2');
+                commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-2');
+                commonInstance._spy.publicSetterProperty1._get.and.returnValue('new-value-2');
+                commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-2');
+                expect(commonInstance.publicProperty1).toBe('new-value-2');
+                expect(commonInstance.publicGetterProperty1).toBe('new-value-2');
+                expect(commonInstance.publicSetterProperty1).toBe('new-value-2');
+                expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-2');
+
+                commonInstance._spy['protectedProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['protectedProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['protectedSetterProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-2');
+                expect(commonInstance['protectedProperty1']).toBe('new-value-2');
+                expect(commonInstance['protectedGetterProperty1']).toBe('new-value-2');
+                expect(commonInstance['protectedSetterProperty1']).toBe('new-value-2');
+                expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-2');
+
+                commonInstance._spy['privateProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
+                commonInstance._spy['privateProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['privateSetterProperty1']._get.and.returnValue('new-value-2');
+                commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-2');
+                expect(commonInstance['privateProperty1']).toBe('new-value-2');
+                expect(commonInstance['privateGetterProperty1']).toBe('new-value-2');
+                expect(commonInstance['privateSetterProperty1']).toBe('new-value-2');
+                expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-2');
+
+                commonInstance._spy['nonExistProperty']._get.and.returnValue('new-value-1');
+                commonInstance._spy['nonExistProperty']._get.and.returnValue('new-value-2');
+                expect(commonInstance['nonExistProperty']).toBe('new-value-2');
+            });
+
+            it('should not allow spiedMembers to be replaced via spyFacade', () => {
+                expect(() => commonInstance._spy.publicProperty1 = {}).toThrow();
+                expect(() => (commonInstance._spy as any).publicGetterProperty1 = {}).toThrow();
+                expect(() => commonInstance._spy.publicSetterProperty1 = {}).toThrow();
+                expect(() => commonInstance._spy.publicGetterSetterProperty1 = {}).toThrow();
+
+                expect(() => (commonInstance._spy['protectedProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['protectedSetterProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterSetterProperty1'] = {})).toThrow();
+
+                expect(() => (commonInstance._spy['privateProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['privateGetterProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['privateSetterProperty1'] = {})).toThrow();
+                expect(() => (commonInstance._spy['privateGetterSetterProperty1'] = {})).toThrow();
+
+                expect(() => (commonInstance._spy['nonExistProperty'] = {})).toThrow();
+            });
+
+            it('should not allow reading _func on properties', () => {
+                expect(() => commonInstance._spy.publicProperty1._func).toThrow();
+                expect(() => commonInstance._spy.publicGetterProperty1._func).toThrow();
+                expect(() => commonInstance._spy.publicSetterProperty1._func).toThrow();
+                expect(() => commonInstance._spy.publicGetterSetterProperty1._func).toThrow();
+
+                expect(() => (commonInstance._spy['protectedProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['protectedSetterProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterSetterProperty1']._func)).toThrow();
+
+                expect(() => (commonInstance._spy['privateProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['privateGetterProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['privateSetterProperty1']._func)).toThrow();
+                expect(() => (commonInstance._spy['privateGetterSetterProperty1']._func)).toThrow();
+
+                expect(() => (commonInstance._spy['nonExistProperty']._func)).toThrow();
+            });
+
+            it('should not allow writing _func on properties', () => {
+                expect(() => commonInstance._spy.publicProperty1._func = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy.publicGetterProperty1._func = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy.publicSetterProperty1._func = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy.publicGetterSetterProperty1._func = jasmine.createSpy('whatever')).toThrow();
+
+                expect(() => (commonInstance._spy['protectedProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['protectedSetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['protectedGetterSetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+
+                expect(() => (commonInstance._spy['privateProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['privateGetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['privateSetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+                expect(() => (commonInstance._spy['privateGetterSetterProperty1']._func = jasmine.createSpy('whatever'))).toThrow();
+
+                expect(() => (commonInstance._spy['nonExistProperty']._func = jasmine.createSpy('whatever'))).toThrow();
+            });
         });
 
-        it('should return undefined for all private properties', () => {
-            expect((commonInstance as any).privateProperty1).toBeUndefined();
-            expect((commonInstance as any).privateProperty2).toBeUndefined();
-            expect((commonInstance as any).privateGetterProperty1).toBeUndefined();
-            expect((commonInstance as any).privateSetterProperty1).toBeUndefined();
-            expect((commonInstance as any).privateGetterSetterProperty1).toBeUndefined();
+        describe('methods', () => {
+            it('should return spy for all methods', () => {
+                expect(commonInstance.publicMethod1).not.toHaveBeenCalled();
+                expect(commonInstance.publicMethod1).not.toHaveBeenCalled();
+                expect((commonInstance as any).protectedMethod1).not.toHaveBeenCalled();
+                expect((commonInstance as any).protectedMethod1).not.toHaveBeenCalled();
+                expect((commonInstance as any).privateMethod1).not.toHaveBeenCalled();
+                expect((commonInstance as any).privateMethod1).not.toHaveBeenCalled();
 
-            expect(commonInstance['privateProperty1']).toBeUndefined();
-            expect(commonInstance['privateProperty2']).toBeUndefined();
-            expect(commonInstance['privateGetterProperty1']).toBeUndefined();
-            expect(commonInstance['privateSetterProperty1']).toBeUndefined();
-            expect(commonInstance['privateGetterSetterProperty1']).toBeUndefined();
-        });
+                expect(commonInstance['publicMethod1']).not.toHaveBeenCalled();
+                expect(commonInstance['publicMethod1']).not.toHaveBeenCalled();
+                expect(commonInstance['protectedMethod1']).not.toHaveBeenCalled();
+                expect(commonInstance['protectedMethod1']).not.toHaveBeenCalled();
+                expect(commonInstance['privateMethod1']).not.toHaveBeenCalled();
+                expect(commonInstance['privateMethod1']).not.toHaveBeenCalled();
+            });
 
-        it('should return undefined for non-exist properties', () => {
-            expect((commonInstance as any).nonExistProperty).toBeUndefined();
-            expect(commonInstance['nonExistProperty']).toBeUndefined();
-        });
+            it('should return spy from spyFacade for all methods', () => {
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect((commonInstance._spy as any).protectedMethod1._func).not.toHaveBeenCalled();
+                expect((commonInstance._spy as any).protectedMethod1._func).not.toHaveBeenCalled();
+                expect((commonInstance._spy as any).privateMethod1._func).not.toHaveBeenCalled();
+                expect((commonInstance._spy as any).privateMethod1._func).not.toHaveBeenCalled();
 
-        it('should persist the first modification on properties', () => {
-            commonInstance.publicProperty1 = 'new-value';
-            expect(commonInstance.publicProperty1).toBe('new-value');
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedMethod1']._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy['protectedMethod1']._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateMethod1']._func).not.toHaveBeenCalled();
+                expect(commonInstance._spy['privateMethod1']._func).not.toHaveBeenCalled();
+            });
 
-            commonInstance['protectedProperty1'] = 'new-value';
-            expect(commonInstance['protectedProperty1']).toBe('new-value');
+            it('should register calls on each spy', () => {
+                commonInstance.publicMethod1('value-1');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-1');
+                commonInstance.publicMethod1('value-2');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-2');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledTimes(2);
 
-            commonInstance['privateProperty1'] = 'new-value';
-            expect(commonInstance['privateProperty1']).toBe('new-value');
+                (commonInstance as any).protectedMethod1('value-1');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledWith('value-1');
+                (commonInstance as any).protectedMethod1('value-2');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledWith('value-2');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledTimes(2);
 
-            commonInstance['nonExistProperty'] = 'new-value';
-            expect(commonInstance['nonExistProperty']).toBe('new-value');
-        });
+                (commonInstance as any).privateMethod1('value-1');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledWith('value-1');
+                (commonInstance as any).privateMethod1('value-2');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledWith('value-2');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledTimes(2);
+            });
 
-        it('should persist all modifications on properties', () => {
-            commonInstance.publicProperty1 = 'new-value-1';
-            commonInstance.publicProperty1 = 'new-value-2';
-            expect(commonInstance.publicProperty1).toBe('new-value-2');
+            it('should register calls on each spy accessed from the spyFacade', () => {
+                commonInstance._spy.publicMethod1._func('value-1');
+                expect(commonInstance._spy.publicMethod1._func).toHaveBeenCalledWith('value-1');
+                commonInstance._spy.publicMethod1._func('value-2');
+                expect(commonInstance._spy.publicMethod1._func).toHaveBeenCalledWith('value-2');
+                expect(commonInstance._spy.publicMethod1._func).toHaveBeenCalledTimes(2);
 
-            commonInstance['protectedProperty1'] = 'new-value-1';
-            commonInstance['protectedProperty1'] = 'new-value-2';
-            expect(commonInstance['protectedProperty1']).toBe('new-value-2');
+                (commonInstance._spy as any).protectedMethod1._func('value-1');
+                expect((commonInstance._spy as any).protectedMethod1._func).toHaveBeenCalledWith('value-1');
+                (commonInstance._spy as any).protectedMethod1._func('value-2');
+                expect((commonInstance._spy as any).protectedMethod1._func).toHaveBeenCalledWith('value-2');
+                expect((commonInstance._spy as any).protectedMethod1._func).toHaveBeenCalledTimes(2);
 
-            commonInstance['privateProperty1'] = 'new-value-1';
-            commonInstance['privateProperty1'] = 'new-value-2';
-            expect(commonInstance['privateProperty1']).toBe('new-value-2');
+                (commonInstance._spy as any).privateMethod1._func('value-1');
+                expect((commonInstance._spy as any).privateMethod1._func).toHaveBeenCalledWith('value-1');
+                (commonInstance._spy as any).privateMethod1._func('value-2');
+                expect((commonInstance._spy as any).privateMethod1._func).toHaveBeenCalledWith('value-2');
+                expect((commonInstance._spy as any).privateMethod1._func).toHaveBeenCalledTimes(2);
+            });
 
-            commonInstance['nonExistProperty'] = 'new-value-1';
-            commonInstance['nonExistProperty'] = 'new-value-2';
-            expect(commonInstance['nonExistProperty']).toBe('new-value-2');
-        });
+            it('should register calls on each spy when calls are made after the spys are inspected', () => {
+                expect(commonInstance.publicMethod1).not.toHaveBeenCalled();
+                commonInstance.publicMethod1('value-1');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-1');
+                commonInstance.publicMethod1('value-2');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-2');
+                expect(commonInstance.publicMethod1).toHaveBeenCalledTimes(2);
 
-        it('should ignore the first direct modification on properties with setters', () => {
-            commonInstance.publicSetterProperty1 = 'new-value';
-            expect(commonInstance.publicSetterProperty1).toBeUndefined();
-            commonInstance.publicGetterSetterProperty1 = 'new-value';
-            expect(commonInstance.publicGetterSetterProperty1).toBeUndefined();
+                expect((commonInstance as any).protectedMethod1).not.toHaveBeenCalled();
+                (commonInstance as any).protectedMethod1('value-1');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledWith('value-1');
+                (commonInstance as any).protectedMethod1('value-2');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledWith('value-2');
+                expect((commonInstance as any).protectedMethod1).toHaveBeenCalledTimes(2);
 
-            commonInstance['protectedSetterProperty1'] = 'new-value';
-            expect(commonInstance['protectedSetterProperty1']).toBeUndefined();
-            commonInstance['protectedGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance['protectedGetterSetterProperty1']).toBeUndefined();
+                expect((commonInstance as any).privateMethod1).not.toHaveBeenCalled();
+                (commonInstance as any).privateMethod1('value-1');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledWith('value-1');
+                (commonInstance as any).privateMethod1('value-2');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledWith('value-2');
+                expect((commonInstance as any).privateMethod1).toHaveBeenCalledTimes(2);
+            });
 
-            commonInstance['privateSetterProperty1'] = 'new-value';
-            expect(commonInstance['privateSetterProperty1']).toBeUndefined();
-            commonInstance['privateGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance['privateGetterSetterProperty1']).toBeUndefined();
-        });
+            it('should allow spies to be setup before their first calls', () => {
+                (commonInstance.publicMethod1 as jasmine.Spy).and.returnValue(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
 
-        it('should ignore all direct modifications on properties with setters', () => {
-            commonInstance.publicSetterProperty1 = 'new-value-1';
-            commonInstance.publicSetterProperty1 = 'new-value-2';
-            expect(commonInstance.publicSetterProperty1).toBeUndefined();
-            commonInstance.publicGetterSetterProperty1 = 'new-value-1';
-            commonInstance.publicGetterSetterProperty1 = 'new-value-2';
-            expect(commonInstance.publicGetterSetterProperty1).toBeUndefined();
+                ((commonInstance as any).protectedMethod1 as jasmine.Spy).and.returnValue(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
 
-            commonInstance['protectedSetterProperty1'] = 'new-value-1';
-            commonInstance['protectedSetterProperty1'] = 'new-value-2';
-            expect(commonInstance['protectedSetterProperty1']).toBeUndefined();
-            commonInstance['protectedGetterSetterProperty1'] = 'new-value-1';
-            commonInstance['protectedGetterSetterProperty1'] = 'new-value-2';
-            expect(commonInstance['protectedGetterSetterProperty1']).toBeUndefined();
+                ((commonInstance as any).privateMethod1 as jasmine.Spy).and.returnValue(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+            });
 
-            commonInstance['privateSetterProperty1'] = 'new-value-1';
-            commonInstance['privateSetterProperty1'] = 'new-value-2';
-            expect(commonInstance['privateSetterProperty1']).toBeUndefined();
-            commonInstance['privateGetterSetterProperty1'] = 'new-value-1';
-            commonInstance['privateGetterSetterProperty1'] = 'new-value-2';
-            expect(commonInstance['privateGetterSetterProperty1']).toBeUndefined();
-        });
+            it('should allow spies to be setup through spyFacade before their first calls', () => {
+                commonInstance._spy.publicMethod1._func.and.returnValue(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
 
-        it('should throw for modifications on properties with only getters', () => {
-            expect(() => (commonInstance as any).publicGetterProperty1 = 'new-value').toThrow();
-            expect(() => (commonInstance as any).protectedGetterProperty1 = 'new-value').toThrow();
-            expect(() => (commonInstance as any).privateGetterProperty1 = 'new-value').toThrow();
-        });
+                (commonInstance._spy as any).protectedMethod1._func.and.returnValue(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
 
-        it('should spy getters before they are used', () => {
-            expect(commonInstance._spy.publicGetterProperty1._get).not.toHaveBeenCalled();
-            expect(commonInstance._spy.publicGetterSetterProperty1._get).not.toHaveBeenCalled();
+                (commonInstance._spy as any).privateMethod1._func.and.returnValue(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+            });
 
-            expect(commonInstance._spy['protectedGetterProperty1']._get).not.toHaveBeenCalled();
-            expect(commonInstance._spy['protectedGetterSetterProperty1']._get).not.toHaveBeenCalled();
+            it('should allow spies to be setup after their first calls', () => {
+                commonInstance.publicMethod1('whatever');
+                (commonInstance.publicMethod1 as jasmine.Spy).and.returnValue(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
 
-            expect(commonInstance._spy['privateGetterProperty1']._get).not.toHaveBeenCalled();
-            expect(commonInstance._spy['privateGetterSetterProperty1']._get).not.toHaveBeenCalled();
-        });
+                (commonInstance as any).protectedMethod1('whatever');
+                ((commonInstance as any).protectedMethod1 as jasmine.Spy).and.returnValue(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
 
-        it('should spy setters before they are used', () => {
-            expect(commonInstance._spy.publicSetterProperty1._set).not.toHaveBeenCalled();
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).not.toHaveBeenCalled();
+                (commonInstance as any).privateMethod1('whatever');
+                ((commonInstance as any).privateMethod1 as jasmine.Spy).and.returnValue(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+            });
 
-            expect(commonInstance._spy['protectedSetterProperty1']._set).not.toHaveBeenCalled();
-            expect(commonInstance._spy['protectedGetterSetterProperty1']._set).not.toHaveBeenCalled();
+            it('should allow spies to be setup through spyFacade after their first calls', () => {
+                commonInstance.publicMethod1('whatever');
+                commonInstance._spy.publicMethod1._func.and.returnValue(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
+                expect(commonInstance.publicMethod1('whatever')).toBe(999);
 
-            expect(commonInstance._spy['privateSetterProperty1']._set).not.toHaveBeenCalled();
-            expect(commonInstance._spy['privateGetterSetterProperty1']._set).not.toHaveBeenCalled();
-        });
+                (commonInstance as any).protectedMethod1('whatever');
+                (commonInstance._spy as any).protectedMethod1._func.and.returnValue(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).protectedMethod1('whatever')).toBe(999);
 
-        it('should record calls on getters', () => {
-            let temp1 = commonInstance.publicGetterProperty1;
-            temp1 = commonInstance.publicGetterSetterProperty1;
+                (commonInstance as any).privateMethod1('whatever');
+                (commonInstance._spy as any).privateMethod1._func.and.returnValue(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+                expect((commonInstance as any).privateMethod1('whatever')).toBe(999);
+            });
 
-            expect(commonInstance._spy.publicGetterProperty1._get).toHaveBeenCalled();
-            expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalled();
+            it('should allow spies to be added with non-exist names', () => {
+                (commonInstance as any).nonExistMethod = jasmine.createSpy('newSpy');
+                (commonInstance as any).nonExistMethod('value-1');
+                expect((commonInstance as any).nonExistMethod).toHaveBeenCalledWith('value-1');
+            });
 
-            temp1 = commonInstance.publicGetterProperty1;
-            temp1 = commonInstance.publicGetterSetterProperty1;
+            it('should not allow spies to be replaced before their first calls', () => {
+                let newSpy = jasmine.createSpy('newSpy')
+                expect(() => commonInstance.publicMethod1 = newSpy).toThrowError();
 
-            expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalledTimes(2);
-            expect(commonInstance._spy.publicGetterProperty1._get).toHaveBeenCalledTimes(2);
-        });
+                newSpy = jasmine.createSpy('newSpy')
+                expect(() => (commonInstance as any).protectedMethod1 = newSpy).toThrowError();
 
-        it('should record calls on setters', () => {
-            commonInstance.publicSetterProperty1 = 'new-value';
-            commonInstance.publicGetterSetterProperty1 = 'new-value';
-            expect(commonInstance._spy.publicSetterProperty1._set).toHaveBeenCalledWith('new-value');
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledWith('new-value');
-            commonInstance.publicSetterProperty1 = 'new-value';
-            commonInstance.publicGetterSetterProperty1 = 'new-value';
-            expect(commonInstance._spy.publicSetterProperty1._set).toHaveBeenCalledTimes(2);
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledTimes(2);
+                newSpy = jasmine.createSpy('newSpy')
+                expect(() => (commonInstance as any).privateMethod1 = newSpy).toThrowError();
+            });
 
-            commonInstance['protectedSetterProperty1'] = 'new-value';
-            commonInstance['protectedGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance._spy['protectedSetterProperty1']._set).toHaveBeenCalledWith('new-value');
-            expect(commonInstance._spy['protectedGetterSetterProperty1']._set).toHaveBeenCalledWith('new-value');
-            commonInstance['protectedSetterProperty1'] = 'new-value';
-            commonInstance['protectedGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance._spy['protectedSetterProperty1']._set).toHaveBeenCalledTimes(2);
-            expect(commonInstance._spy['protectedGetterSetterProperty1']._set).toHaveBeenCalledTimes(2);
+            it('should not allow spies to be replaced after their calls', () => {
+                commonInstance.publicMethod1('whatever');
+                expect(() => commonInstance.publicMethod1 = jasmine.createSpy('newSpy')).toThrowError();
 
-            commonInstance['privateSetterProperty1'] = 'new-value';
-            commonInstance['privateGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance._spy['privateSetterProperty1']._set).toHaveBeenCalledWith('new-value');
-            expect(commonInstance._spy['privateGetterSetterProperty1']._set).toHaveBeenCalledWith('new-value');
-            commonInstance['privateSetterProperty1'] = 'new-value';
-            commonInstance['privateGetterSetterProperty1'] = 'new-value';
-            expect(commonInstance._spy['privateSetterProperty1']._set).toHaveBeenCalledTimes(2);
-            expect(commonInstance._spy['privateGetterSetterProperty1']._set).toHaveBeenCalledTimes(2);
-        });
+                (commonInstance as any).protectedMethod1('whatever');
+                expect(() => (commonInstance as any).privateMethod1 = jasmine.createSpy('newSpy')).toThrowError();
 
-        it('should modify results from getters before they are used', () => {
-            commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
-            commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
-            expect(commonInstance.publicGetterProperty1).toBe('new-value-1');
-            expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-1');
+                (commonInstance as any).privateMethod1('whatever');
+                expect(() => (commonInstance as any).privateMethod1 = jasmine.createSpy('newSpy')).toThrowError();
+            });
 
-            commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['protectedGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-1');
+            it('should not allow spies to be replaced after they are accessed from spyFacade', () => {
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect(() => commonInstance.publicMethod1 = jasmine.createSpy('newSpy')).toThrowError();
 
-            commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['privateGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-1');
-        });
+                expect((commonInstance._spy as any).protectedMethod1._func).not.toHaveBeenCalled();
+                expect(() => (commonInstance as any).privateMethod1 = jasmine.createSpy('newSpy')).toThrowError();
 
-        it('should modify results from getters after they are used', () => {
-            let temp1 = commonInstance.publicGetterProperty1;
-            temp1 = commonInstance.publicGetterSetterProperty1;
-            commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
-            commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
-            expect(commonInstance.publicGetterProperty1).toBe('new-value-1');
-            expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-1');
+                expect((commonInstance._spy as any).privateMethod1._func).not.toHaveBeenCalled();
+                expect(() => (commonInstance as any).privateMethod1 = jasmine.createSpy('newSpy')).toThrowError();
+            });
 
-            temp1 = commonInstance['protectedGetterProperty1'];
-            temp1 = commonInstance['protectedGetterSetterProperty1'];
-            commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['protectedGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-1');
+            it('should not allow spiedMembers to be replaced via spyFacade', () => {
+                expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
+                expect(() => commonInstance._spy.publicMethod1 = {}).toThrowError();
 
-            temp1 = commonInstance['privateGetterProperty1'];
-            temp1 = commonInstance['privateGetterSetterProperty1'];
-            commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['privateGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-1');
-        });
+                expect((commonInstance._spy as any).protectedMethod1._func).not.toHaveBeenCalled();
+                expect(() => (commonInstance as any)._spy.privateMethod1 = {}).toThrowError();
 
-        it('should re-modify results from getters', () => {
-            commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-1');
-            commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-1');
-            expect(commonInstance.publicGetterProperty1).toBe('new-value-1');
-            expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-1');
-            commonInstance._spy.publicGetterProperty1._get.and.returnValue('new-value-2');
-            commonInstance._spy.publicGetterSetterProperty1._get.and.returnValue('new-value-2');
-            expect(commonInstance.publicGetterProperty1).toBe('new-value-2');
-            expect(commonInstance.publicGetterSetterProperty1).toBe('new-value-2');
+                expect((commonInstance._spy as any).privateMethod1._func).not.toHaveBeenCalled();
+                expect(() => (commonInstance as any)._spy.privateMethod1 = {}).toThrowError();
+            });
 
-            commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['protectedGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-1');
-            commonInstance._spy['protectedGetterProperty1']._get.and.returnValue('new-value-2');
-            commonInstance._spy['protectedGetterSetterProperty1']._get.and.returnValue('new-value-2');
-            expect(commonInstance['protectedGetterProperty1']).toBe('new-value-2');
-            expect(commonInstance['protectedGetterSetterProperty1']).toBe('new-value-2');
+            it('should not allow reading _get/_set on functions', () => {
+                expect(() => commonInstance._spy.publicMethod1._get).toThrow();
+                expect(() => commonInstance._spy.publicMethod1._set).toThrow();
 
-            commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-1');
-            commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-1');
-            expect(commonInstance['privateGetterProperty1']).toBe('new-value-1');
-            expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-1');
-            commonInstance._spy['privateGetterProperty1']._get.and.returnValue('new-value-2');
-            commonInstance._spy['privateGetterSetterProperty1']._get.and.returnValue('new-value-2');
-            expect(commonInstance['privateGetterProperty1']).toBe('new-value-2');
-            expect(commonInstance['privateGetterSetterProperty1']).toBe('new-value-2');
-        });
+                expect(() => commonInstance._spy['protectedMethod1']._get).toThrow();
+                expect(() => commonInstance._spy['protectedMethod1']._set).toThrow();
 
-        it('should return spy for all functions', () => {
-            expect(commonInstance.publicMethod1).not.toHaveBeenCalled();
-            expect(commonInstance.publicMethod1).not.toHaveBeenCalled();
-            expect((commonInstance as any).privateMethod).not.toHaveBeenCalled();
-            expect((commonInstance as any).privateMethod).not.toHaveBeenCalled();
-        });
+                expect(() => commonInstance._spy['privateMethod1']._get).toThrow();
+                expect(() => commonInstance._spy['privateMethod1']._set).toThrow();
+            });
 
-        it('should register calls on each spy', () => {
-            commonInstance.publicMethod1('value-1');
-            expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-1');
-            commonInstance.publicMethod1('value-2');
-            expect(commonInstance.publicMethod1).toHaveBeenCalledWith('value-2');
-            expect(commonInstance.publicMethod1).toHaveBeenCalledTimes(2);
+            it('should not allow writing _get/_set on functions', () => {
+                expect(() => commonInstance._spy.publicMethod1._get = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy.publicMethod1._set = jasmine.createSpy('whatever')).toThrow();
 
-            (commonInstance as any).privateMethod('value-1');
-            expect((commonInstance as any).privateMethod).toHaveBeenCalledWith('value-1');
-            (commonInstance as any).privateMethod('value-2');
-            expect((commonInstance as any).privateMethod).toHaveBeenCalledWith('value-2');
-            expect((commonInstance as any).privateMethod).toHaveBeenCalledTimes(2);
+                expect(() => commonInstance._spy['protectedMethod1']._get = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy['protectedMethod1']._set = jasmine.createSpy('whatever')).toThrow();
 
-            commonInstance.publicGetterSetterProperty1 = 'value-1';
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledWith('value-1');
-            commonInstance.publicGetterSetterProperty1 = 'value-2';
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledWith('value-2');
-            expect(commonInstance._spy.publicGetterSetterProperty1._set).toHaveBeenCalledTimes(2);
-
-            const whatever1 = commonInstance.publicGetterSetterProperty1;
-            expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalled();
-            const whatever2 = commonInstance.publicGetterSetterProperty1;
-            expect(commonInstance._spy.publicGetterSetterProperty1._get).toHaveBeenCalledTimes(2);
-        });
-
-        it('should allow spy setup before its first call', () => {
-            (commonInstance.publicMethod1 as jasmine.Spy).and.returnValue(999);
-            expect(commonInstance.publicMethod1('whatever')).toBe(999);
-            expect(commonInstance.publicMethod1('whatever')).toBe(999);
-
-            ((commonInstance as any).privateMethod as jasmine.Spy).and.returnValue(999);
-            expect((commonInstance as any).privateMethod('whatever')).toBe(999);
-            expect((commonInstance as any).privateMethod('whatever')).toBe(999);
-        });
-
-        it('should allow spy setup after its first call', () => {
-            commonInstance.publicMethod1('whatever');
-
-            (commonInstance.publicMethod1 as jasmine.Spy).and.returnValue(111);
-            expect(commonInstance.publicMethod1('whatever')).toBe(111);
-            (commonInstance.publicMethod1 as jasmine.Spy).and.returnValue(999);
-            expect(commonInstance.publicMethod1('whatever')).toBe(999);
-
-            (commonInstance as any).privateMethod('whatever');
-
-            ((commonInstance as any).privateMethod as jasmine.Spy).and.returnValue(111);
-            expect((commonInstance as any).privateMethod('whatever')).toBe(111);
-            ((commonInstance as any).privateMethod as jasmine.Spy).and.returnValue(999);
-            expect((commonInstance as any).privateMethod('whatever')).toBe(999);
-        });
-
-        it('should allow spy to be added with non-exist names', () => {
-            (commonInstance as any).nonExistMethod = jasmine.createSpy('newSpy');
-            (commonInstance as any).nonExistMethod('value-1');
-            expect((commonInstance as any).nonExistMethod).toHaveBeenCalledWith('value-1');
-        });
-
-        it('should allow spy to be replaced before its first call', () => {
-            const newSpy1 = jasmine.createSpy('newSpy')
-            expect(() => commonInstance.publicMethod1 = newSpy1).not.toThrowError();
-            commonInstance.publicMethod1('value-1');
-
-            expect(newSpy1).toHaveBeenCalledWith('value-1');
-
-            const newSpy2 = jasmine.createSpy('newSpy')
-            expect(() => (commonInstance as any).privateMethod = newSpy2).not.toThrowError();
-            (commonInstance as any).privateMethod('value-1');
-
-            expect(newSpy2).toHaveBeenCalledWith('value-1');
-        });
-
-        it('should allow spy to be replaced after its first call', () => {
-            commonInstance.publicMethod1('whatever');
-            const newSpy1 = jasmine.createSpy('newSpy')
-            expect(() => commonInstance.publicMethod1 = newSpy1).not.toThrowError();
-            commonInstance.publicMethod1('value-1');
-
-            expect(newSpy1).toHaveBeenCalledWith('value-1');
-
-            (commonInstance as any).privateMethod('whatever');
-            const newSpy2 = jasmine.createSpy('newSpy')
-            expect(() => (commonInstance as any).privateMethod = newSpy2).not.toThrowError();
-            (commonInstance as any).privateMethod('value-1');
-
-            expect(newSpy2).toHaveBeenCalledWith('value-1');
-        });
-
-        it('should throw when _spy facade is modified', () => {
-            expect(() => commonInstance._spy = 42 as any).toThrow();
-            expect(() => commonInstance._spy.publicGetterSetterProperty1 = {} as any).toThrow();
+                expect(() => commonInstance._spy['privateMethod1']._get = jasmine.createSpy('whatever')).toThrow();
+                expect(() => commonInstance._spy['privateMethod1']._set = jasmine.createSpy('whatever')).toThrow();
+            });
         });
     }
 });

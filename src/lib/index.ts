@@ -40,6 +40,10 @@ class DynamicBase<T extends object> {
                 throw Error('Cannot modify _spy. It is part of the MockFactory');
             }
 
+            if (typeof this.prototype[propertyName] === 'function') {
+                throw Error(`Cannot change ${propertyName} function, because MockFactory has already attached a permanent spy to it`)
+            }
+
             this.ensureSpy(propertyName);
 
             this.stub[propertyName] = value;
@@ -56,7 +60,7 @@ class DynamicBase<T extends object> {
             return this.spy[propertyName];
         },
         set: (target, propertyName: keyof T, value, receiver) => {
-            throw Error('Cannot modify spies. They are part of the MockFactory');
+            throw Error(`Cannot change _spy.${propertyName}, because it is part of the MockFactory`);
         },
     }
 
@@ -70,37 +74,31 @@ class DynamicBase<T extends object> {
         if (!this.spy[propertyName]) {
             // if target is property
             if (typeof this.prototype[propertyName] !== 'function') {
-                // TODO __lookupGetter__ and __lookupSetter will be deprecated but Object.getPropertyDesriptor has not arrived.
-                // Consider using polyfill to be future proof
-                const hasGetter = !!(this.prototype as any).__lookupGetter__(propertyName); // this will lookup inherited getter/setter
-                const hasSetter = !!(this.prototype as any).__lookupSetter__(propertyName);
-                let descriptor = Object.getOwnPropertyDescriptor(this.prototype, propertyName); // this will return undefined on inherited getter/setter
-                descriptor = {
-                    value: undefined,
-                    writable: true,
+                // we add getters and setters to all properties to make the read and write spy-able
+                const descriptor = {
+                    get: () => {},
+                    set: (value) => {},
                     enumerable: true,
                     configurable: true, // required by spyOnProperty
                 };
 
-                if (hasGetter) {
-                    descriptor.get = () => {};
-                    delete descriptor.value;
-                    delete descriptor.writable;
-                }
-
-                if (hasSetter) {
-                    descriptor.set = (...arg) => {};
-                    delete descriptor.value;
-                    delete descriptor.writable;
-                }
-
                 Object.defineProperty(this.stub, propertyName, descriptor);
 
+                // by default, let getter spy return whatever setter spy receives
+                const getterSpy = spyOnProperty(this.stub, propertyName, 'get');
+                const setterSpy = spyOnProperty(this.stub, propertyName, 'set');
+                setterSpy.and.callFake((value) => getterSpy.and.returnValue(value));
+
                 this.spy[propertyName] = {
-                    _func: undefined,
-                    _get: hasGetter || (descriptor && descriptor.get) ? spyOnProperty(this.stub, propertyName, 'get') : undefined,
-                    _set: hasSetter || (descriptor && descriptor.set) ? spyOnProperty(this.stub, propertyName, 'set') : undefined,
+                    _get: getterSpy,
+                    _set: setterSpy,
                 }
+
+                Object.defineProperty(this.spy[propertyName], '_func', {
+                    get: () => { throw Error(`can't get ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); },
+                    set: () => { throw Error(`can't set ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); }
+                });
+
             // if target is function
             } else {
                 const spy = jasmine.createSpy(propertyName);
@@ -110,6 +108,16 @@ class DynamicBase<T extends object> {
                     _get: undefined,
                     _set: undefined,
                 };
+
+                Object.defineProperty(this.spy[propertyName], '_get', {
+                    get: () => { throw Error(`can't get ${propertyName}._get because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
+                    set: () => { throw Error(`can't set ${propertyName}._get because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); }
+                });
+
+                Object.defineProperty(this.spy[propertyName], '_set', {
+                    get: () => { throw Error(`can't get ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
+                    set: () => { throw Error(`can't set ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); }
+                });
             }
         }
     }
