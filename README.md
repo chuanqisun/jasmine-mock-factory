@@ -97,6 +97,8 @@ const mockLocation = MockFactory.create(location);
 ```TypeScript
   const mockInstance = MockFactory.create(location);
   mockInstance.reload(); // use it as if it were the real window.location
+  let temp = mockInstance.search; // use it as if it were the real window.search
+  mockInstance.hash = '#myHash'; // use it as if it were the real window.hash
   mockInstance._spy.reload._func; // returns the spy behind location.reload
   mockInstance._spy.search._get; // returns the spy behind the getter for location.search
   mockInstance._spy.hash._set; // returns the spy behind the setter for location.hash
