@@ -12,23 +12,44 @@ import { MockFactory} from 'jasmine-mock-factory';
 
 it('should pass', () => {
     const mockInstance = MockFactory.create(SomeClass);
-    mockInstance.doSomething.and.returnValue('awesome!');
 
+    /* arrange */
+    mockInstance._spy.doSomething._func.and.returnValue('awesome!');
+
+    /* act */
     mockInstance.doSomething();  // returns 'awesome!'
 
+    /* assert */
     expect(mockInstance.doSomething).toHaveBeenCalled();
 }
+```
+## Quick reference
+```TypeScript
+  /* create a mock from a class*/
+  const mockInstance1 = MockFactory.create(RealClass);
+
+  /* create a mock from an instance*/
+  const mockInstance2 = MockFactory.create(realInstance);
+
+  /* access a function spy */
+  const spy1 = mockInstance._spy.functionName._func
+
+  /* access a getter spy */
+  const spy2 = mockInstance._spy.propertyName._get
+
+  /* access a setter spy */
+  const spy3 = mockInstance._spy.propertyName._set
 ```
 
 ## Prerequisite
 
 This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
 
-This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains un-compiled `*.ts` files which must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
-
+This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains `*.ts` files that must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
 
 
 ## Usage
+
 ### Install
 ```Shell
 npm install jasmine-mock-factory --save-dev
@@ -62,33 +83,101 @@ const realInstance: RealInterface = new RealClass();
 const mockInstance = MockFactory.create(realInstance);
 ```
 
-### Using a mock
-`MockFactory.create()` will return an object with the same interface as the original object. You can invoke methods and get/set properties on this object. 
-
- * All the public and private methods will have a jasmine.Spy as the initial value. The Spy cannot be overwritten.
- * All the public and private properties will have `undefined` as the initial value. The value can be overwritten with anything.
- 
-### Examples
+#### From window objects
 ```TypeScript
-class RealClass {
-  public doSomething(...arg: any[]) { ... }
-  public someProperty = 'whatever';
-}
+/* make sure you have included dom types from the TypeScript library */
+const mockWindow  = MockFactory.create(window);
+const mockDocument = MockFactory.create(document);
+const mockLocation = MockFactory.create(location);
+```
 
-const mockInstance = MockFactory.create(RealClass);
+### Using a mock
+ * `MockFactory.create()` will return an object with the same interface as the real object. You can invoke functions and access properties on this object.
+ * In addition, the mock object provides a `_spy` facade, where you can access and config spies on functions and properties.
+```TypeScript
+  const mockInstance = MockFactory.create(location);
+  mockInstance.reload(); // use it as if it were the real window.location
+  let temp = mockInstance.search; // use it as if it were the real window.search
+  mockInstance.hash = 'myHash'; // use it as if it were the real window.hash
+  mockInstance._spy.reload._func; // returns the spy behind location.reload
+  mockInstance._spy.search._get; // returns the spy behind the getter for location.search
+  mockInstance._spy.hash._set; // returns the spy behind the setter for location.hash
+```
 
-// get, set property
-expect(mockInstance.someProperty).toBeUndefined();
-mockInstance.someProperty = 'hello';
-expect(mockInstance.someProperty).toBe('hello');
+#### Invoking functions
+ * All functions will have a `jasmine.Spy` as the initial value. The spy cannot be overwritten and returns `undefined` by default.
+ * To access protected and private functions, cast the mockInstance `as any` or use bracket notation.
+```TypeScript
+  mockInstance.publicFunction(42); // the spy behind it is invoked with 42
 
-// use function spy
-expect(mockInstance.doSomething).not.toHaveBeenCalled();
+  (mockInstance as any).privateFunction(42);
+  mockInstance['privateFunction'](42); // equivalent
+```
 
-(mockInstance.doSomething as jasmine.Spy).and.returnValue('awesome!');
+#### Spying/stubbing functions
+ * You can change return values of functions or assert their calls by accessing them directly or through the `_spy` facade.
+ * Access a function spy on `mockInstance._spy.functionName._func`.
+ ```TypeScript
+   /* stubbing a public function */
+   mockInstance._spy.publicFunction._func.and.returnValue(42);
+   (mockInstance.publicFunction as jasmine.Spy).and.returnValue(42); // equivalent, but not recommented because it requires casting
 
-expect(mockInstance.doSomething(42)).toBe('awesome!');
-expect(mockInstance.doSomething).toHaveBeenCalledWith(42);
+   /* stubbing a private function */
+   mockInstance._spy.privateFunction._func.and.returnValue(42);
+   ((mockInstance as any).privateFunction as jasmine.Spy).and.returnValue(42); // equivalent, but not recommented because it requires casting twice
+```
+
+#### Accessing properties
+ * All properties have `undefined` as the initial value. The value can be overwritten with anything.
+ * You have read and write access to any property, even if they were readonly in the real object.
+ * To read or write a protected or private property, cast the mockInstance `as any` or use bracket notation.
+ * To write a readonly property, cast the mockInstance `as any`. The bracket notation won't work.
+ * By default, modification to the properties will persist, even if a getter or setter exists in the real object.
+```TypeScript
+  /* persist modification */
+  mockInstance.publicProperty = 42;
+  let temp = mockInstance.publicProperty; // temp = 42;
+
+  /* access readonly property */
+  mockInstance.readonlyProperty = 42; // typescript compiler error
+  (mockInstance as any).readonlyProperty = 42; // no problem
+  mockInstance['readonlyProperty'] = 42; // typescript compiler error
+
+  /* access private property */
+  (mockInstance as any).privateProperty = 'foo';
+  mockInstance['privateProperty'] = 'foo'; // equivalent
+```
+
+#### Spying/stubbing getters and setters
+ * All properties have spies on the getter and setter, even if the getter and setter don't exist in the real object.
+ * Access a getter spy on `mockInstance._spy.propertyName._get`.
+ * Access a setter spy on `mockInstance._spy.propertyName._set`.
+ * NOTE: modification to the properties will not persist after getter or setter spies are customized
+ * NOTE: `expect(mockInstance.someProperty).toBe(...)` will trigger `mockInstance._spy.someProperty._get`. Design the sequence of your assertions carefully to avoid shooting yourself in the foot.
+```TypeScript
+  /* assert getter calls */
+  let temp = mockInstance.publicProperty;
+  expect(mockInstance._spy.publicProperty._get).toHaveBeenCalled();
+
+  /* assert setter calls on a public property */
+  mockInstance.publicProperty = 42;
+  expect(mockInstance._spy.publicProperty._set).toHaveBeenCalledWith(42);
+
+  /* customize setter */
+  expect(mockInstance.publicProperty).toBe(42); // pass. setter hasn't been customized
+  mockInstance._spy.publicProperty._set.and.callFake(() => { /* noop */});
+  mockInstance.publicProperty = 100;
+  expect(mockInstance.publicProperty).toBe(100); // fail. expect 42 to be 100. setter was customized
+
+  /* assert setter calls on a private property */
+  mockInstance['privateProperty'] = 42;
+  expect(mockInstance._spy.privateProperty._set).toHaveBeenCalledWith(42);
+
+  /* customize getter */
+  expect(mockInstance['privateProperty']).toBe(42); // pass. getter hasn't been customized
+  mockInstance._spy.privateProperty._get.and.returnValue(100);
+  mockInstance['privateProperty'] = 42;
+  expect(mockInstance['privateProperty']).toBe(42); // fail, expect 100 to be 42. getter was customzied
 ```
 
 ## Develope
