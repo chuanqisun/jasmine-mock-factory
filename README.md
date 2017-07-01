@@ -173,8 +173,8 @@ const mockLocation = MockFactory.create(location);
   mockInstance['privateProperty'] = 42;
   expect(mockInstance._spy.privateProperty._set).toHaveBeenCalledWith(42);
 
-  /* customize setter */
-  expect(mockInstance['privateProperty']).toBe(42); // pass. setter hasn't been customized
+  /* customize getter */
+  expect(mockInstance['privateProperty']).toBe(42); // pass. getter hasn't been customized
   mockInstance._spy.privateProperty._get.and.returnValue(100);
   mockInstance['privateProperty'] = 42;
   expect(mockInstance['privateProperty']).toBe(42); // fail, expect 100 to be 42. getter was customzied
