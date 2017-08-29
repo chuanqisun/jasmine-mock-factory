@@ -9,7 +9,7 @@ export declare type Spied<T> = {
 }
 
 export interface SpiedAny {
-    [id: string]: SpiedMember
+    [id: string]: SpiedMember;
 }
 
 export interface SpiedMember {
@@ -45,7 +45,7 @@ class DynamicBase<T extends object> {
             }
 
             if (typeof this.prototype[propertyName] === 'function') {
-                throw Error(`Cannot change ${propertyName} function, because MockFactory has already attached a permanent spy to it`)
+                throw Error(`Cannot change ${propertyName} function, because MockFactory has already attached a permanent spy to it`);
             }
 
             this.ensureSpy(propertyName);
@@ -100,7 +100,7 @@ class DynamicBase<T extends object> {
 
                 Object.defineProperty(this.spy[propertyName], '_func', {
                     get: () => { throw Error(`can't get ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); },
-                    set: () => { throw Error(`can't set ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); }
+                    set: () => { throw Error(`can't set ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); },
                 });
 
             // if target is function
@@ -115,12 +115,12 @@ class DynamicBase<T extends object> {
 
                 Object.defineProperty(this.spy[propertyName], '_get', {
                     get: () => { throw Error(`can't get ${propertyName}._get because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
-                    set: () => { throw Error(`can't set ${propertyName}._get because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); }
+                    set: () => { throw Error(`can't set ${propertyName}._get because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
                 });
 
                 Object.defineProperty(this.spy[propertyName], '_set', {
                     get: () => { throw Error(`can't get ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
-                    set: () => { throw Error(`can't set ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); }
+                    set: () => { throw Error(`can't set ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
                 });
             }
         }
