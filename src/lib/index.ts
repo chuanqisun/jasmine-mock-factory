@@ -13,9 +13,9 @@ export interface SpiedAny {
 }
 
 export interface SpiedMember {
-    _func?: jasmine.Spy;
-    _get?: jasmine.Spy;
-    _set?: jasmine.Spy;
+    _func: jasmine.Spy;
+    _get: jasmine.Spy;
+    _set: jasmine.Spy;
 }
 
 interface Type<T> extends Function {
