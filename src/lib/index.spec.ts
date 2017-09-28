@@ -745,22 +745,22 @@ describe('Using mocks', () => {
 
 
             it('should not allow spiedMembers to be replaced via spyFacade', () => {
-                expect(() => commonInstance._spy.publicProperty1 = {}).toThrow();
+                expect(() => commonInstance._spy.publicProperty1 = {} as any).toThrow();
                 expect(() => (commonInstance._spy as any).publicGetterProperty1 = {}).toThrow();
-                expect(() => commonInstance._spy.publicSetterProperty1 = {}).toThrow();
-                expect(() => commonInstance._spy.publicGetterSetterProperty1 = {}).toThrow();
+                expect(() => commonInstance._spy.publicSetterProperty1 = {} as any).toThrow();
+                expect(() => commonInstance._spy.publicGetterSetterProperty1 = {} as any).toThrow();
 
-                expect(() => (commonInstance._spy.protectedProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.protectedGetterProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.protectedSetterProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.protectedGetterSetterProperty1 = {})).toThrow();
+                expect(() => (commonInstance._spy.protectedProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.protectedGetterProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.protectedSetterProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.protectedGetterSetterProperty1 = {} as any)).toThrow();
 
-                expect(() => (commonInstance._spy.privateProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.privateGetterProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.privateSetterProperty1 = {})).toThrow();
-                expect(() => (commonInstance._spy.privateGetterSetterProperty1 = {})).toThrow();
+                expect(() => (commonInstance._spy.privateProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.privateGetterProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.privateSetterProperty1 = {} as any)).toThrow();
+                expect(() => (commonInstance._spy.privateGetterSetterProperty1 = {} as any)).toThrow();
 
-                expect(() => (commonInstance._spy.nonExistProperty = {})).toThrow();
+                expect(() => (commonInstance._spy.nonExistProperty = {} as any)).toThrow();
             });
 
             it('should not allow reading _func on properties', () => {
@@ -1001,13 +1001,13 @@ describe('Using mocks', () => {
 
             it('should not allow spiedMembers to be replaced via spyFacade', () => {
                 expect(commonInstance._spy.publicMethod1._func).not.toHaveBeenCalled();
-                expect(() => commonInstance._spy.publicMethod1 = {}).toThrowError();
+                expect(() => commonInstance._spy.publicMethod1 = {} as any).toThrowError();
 
                 expect(commonInstance._spy.protectedMethod1._func).not.toHaveBeenCalled();
-                expect(() => commonInstance._spy.privateMethod1 = {}).toThrowError();
+                expect(() => commonInstance._spy.privateMethod1 = {} as any).toThrowError();
 
                 expect(commonInstance._spy.privateMethod1._func).not.toHaveBeenCalled();
-                expect(() => commonInstance._spy.privateMethod1 = {}).toThrowError();
+                expect(() => commonInstance._spy.privateMethod1 = {} as any).toThrowError();
             });
 
             it('should not allow reading _get/_set on functions', () => {
