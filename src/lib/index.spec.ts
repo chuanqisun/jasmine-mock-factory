@@ -1,15 +1,10 @@
-// -----------------------------------------------------------------------
-// <copyright company='Microsoft Corporation'>
-//   Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-// -----------------------------------------------------------------------
-
 import { MockFactory, Mock } from './index';
 
 interface IBaseClass {
     publicProperty1: string;
     publicProperty2: string;
     readonly publicGetterProperty1: string;
+    readonly publicGetterProperty2: string;
     publicSetterProperty1: string;
     publicGetterSetterProperty1: string;
     publicMethod1(arg1: string): number;
@@ -27,10 +22,15 @@ class BaseClass implements IBaseClass {
     public publicProperty2 = 'value-a1';
     protected protectedProperty2: 'value-b1'
     private privateProperty2 = 'value-c1';
+    private privateProperty3 = { someKey: 'someValue' };
 
     public get publicGetterProperty1() { return 'value-d1'; }
     protected get protectedGetterProperty1() { return 'value-f1'; }
     private get privateGetterProperty1() { return 'value-f1'; }
+
+    public get publicGetterProperty2() {
+        return this.privateProperty3.someKey;
+    }
 
     public set publicSetterProperty1(value: string) { }
     protected set protectedSetterProperty1(value: string) { }
@@ -799,6 +799,10 @@ describe('Using mocks', () => {
                 expect(() => (commonInstance._spy.privateGetterSetterProperty1._func = jasmine.createSpy('whatever'))).toThrow();
 
                 expect(() => (commonInstance._spy.nonExistProperty._func = jasmine.createSpy('whatever'))).toThrow();
+            });
+
+            it('should not throw when setting up a getter that requires another defined property', () => {
+                expect(() => (commonInstance._spy.publicGetterProperty2._get.and.returnValue('whatever'))).not.toThrow();
             });
         });
 
