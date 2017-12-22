@@ -6,7 +6,7 @@ export interface SpyFacade<T> {
 
 export declare type Spied<T> = {
     [K in keyof T]: SpiedMember;
-}
+};
 
 export interface SpiedAny {
     [id: string]: SpiedMember;
@@ -66,10 +66,13 @@ class DynamicBase<T extends object> {
         set: (target, propertyName: keyof T, value, receiver) => {
             throw Error(`Cannot change _spy.${propertyName}, because it is part of the MockFactory`);
         },
-    }
+        ownKeys: (target) => {
+            return Object.keys(this.spy);
+        }
+    };
 
     constructor(private prototype: T) {
-        this.stubProxy =  new Proxy<Mock<T>>(Object.create(null) as any as Mock<T>, this.stubProxyHandler);
+        this.stubProxy = new Proxy<Mock<T>>(Object.create(null) as any as Mock<T>, this.stubProxyHandler);
         this.spyProxy = new Proxy(Object.create(null), this.spyProxyHanlder);
     }
 
@@ -117,8 +120,8 @@ class DynamicBase<T extends object> {
     private ensureProperty(propertyName: string) {
         // we add getters and setters to all properties to make the read and write spy-able
         const descriptor = {
-            get: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ () => {},
-            set: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ (value) => {},
+            get: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ () => { },
+            set: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ (value) => { },
             enumerable: true,
             configurable: true, // required by spyOnProperty
         };
@@ -133,7 +136,7 @@ class DynamicBase<T extends object> {
             _value: undefined, // this is not on the public API, because _value will become meaningless once user customizes the spies.
             _get: getterSpy,
             _set: setterSpy,
-        }
+        };
 
         Object.defineProperty(this.spy[propertyName], '_func', {
             get: () => { throw Error(`can't get ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); },

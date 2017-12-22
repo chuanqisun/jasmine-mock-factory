@@ -260,6 +260,32 @@ describe('Using mocks', () => {
             });
         });
 
+        describe('listing spy stubbed properties and functions with Object.getOwnPropertyNames', () => {
+            it('should have empty list when no propertire/function mocked or called', () => {
+                const stubbedProperties = Object.getOwnPropertyNames(commonInstance);
+                expect(stubbedProperties.sort()).toEqual([]);
+            });
+
+            it('should have only one mocked propertire/function with same name', () => {
+                let expectedArray: string[];
+
+                expectedArray = ['publicMethod1'].sort()
+                commonInstance._spy.publicMethod1._func.and.returnValue(3);
+                let stubbedProperties = Object.getOwnPropertyNames(commonInstance._spy);
+                expect(stubbedProperties.sort()).toEqual(expectedArray);
+
+                commonInstance._spy.publicMethod1._func.and.returnValue(6);
+                stubbedProperties = Object.getOwnPropertyNames(commonInstance._spy);
+                expect(stubbedProperties.sort()).toEqual(expectedArray);
+
+                expectedArray = ['publicMethod1', 'publicGetterSetterProperty1'].sort()
+                commonInstance.publicGetterSetterProperty1 = 'foo'
+                stubbedProperties = Object.getOwnPropertyNames(commonInstance._spy);
+                expect(stubbedProperties.sort()).toEqual(expectedArray);
+            });
+
+        });
+
         describe('properties', () => {
             it('should return undefined for all public properties', () => {
                 expect(commonInstance.publicProperty1).toBeUndefined();
