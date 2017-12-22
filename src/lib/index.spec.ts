@@ -267,7 +267,6 @@ describe('Using mocks', () => {
             });
 
             it('should have only one mocked propertire/function with same name', () => {
-                
                 let expectedArray: string[];
 
                 expectedArray = ['publicMethod1'].sort()
