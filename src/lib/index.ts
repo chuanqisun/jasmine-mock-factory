@@ -1,19 +1,15 @@
 export declare type Mock<T> = T & SpyFacade<T>;
 
 export interface SpyFacade<T> {
-    _spy: Spied<T> & SpiedAny & Clearable;
+    _spy: Spied<T> & SpiedAny;
 }
 
 export declare type Spied<T> = {
     [K in keyof T]: SpiedMember;
-}
+};
 
 export interface SpiedAny {
     [id: string]: SpiedMember;
-}
-
-export interface Clearable {
-    clearFunctionCalls(): void;
 }
 
 export interface SpiedMember {
@@ -31,18 +27,6 @@ class DynamicBase<T extends object> {
     private stub = Object.create(null);
     private spyProxy: T;
     private spy = Object.create(null);
-
-    private clearFunctionsCalls = () => {
-        for (const func of this.stubedFunctions) {
-            try {
-                this.spyProxy[func]._func.calls.reset();
-            } catch (error) {
-                console.warn(`${func} is not a function`);
-            }
-        }
-    }
-
-    private stubedFunctions: string[] = [];
 
     // create a spy before it is directly read/written
     private stubProxyHandler = {
@@ -69,24 +53,23 @@ class DynamicBase<T extends object> {
             this.stub[propertyName] = value;
 
             return true;
-        }
+        },
     };
 
     // create a spy before it is read from the spyFacade
     private spyProxyHanlder = {
         get: (target: T, propertyName: keyof T, receiver) => {
-            if (propertyName === 'clearFunctionCalls') {
-                return this.clearFunctionsCalls;
-            }
-
             this.ensureSpy(propertyName);
 
             return this.spy[propertyName];
         },
         set: (target, propertyName: keyof T, value, receiver) => {
             throw Error(`Cannot change _spy.${propertyName}, because it is part of the MockFactory`);
+        },
+        ownKeys: (target) => {
+            return Object.keys(this.spy);
         }
-    }
+    };
 
     constructor(private prototype: T) {
         this.stubProxy = new Proxy<Mock<T>>(Object.create(null) as any as Mock<T>, this.stubProxyHandler);
@@ -132,8 +115,6 @@ class DynamicBase<T extends object> {
             get: () => { throw Error(`can't get ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
             set: () => { throw Error(`can't set ${propertyName}._set because ${propertyName} is a function. You can config function spy via ${propertyName}._func`); },
         });
-
-        this.stubedFunctions.push(propertyName);
     }
 
     private ensureProperty(propertyName: string) {
@@ -155,7 +136,7 @@ class DynamicBase<T extends object> {
             _value: undefined, // this is not on the public API, because _value will become meaningless once user customizes the spies.
             _get: getterSpy,
             _set: setterSpy,
-        }
+        };
 
         Object.defineProperty(this.spy[propertyName], '_func', {
             get: () => { throw Error(`can't get ${propertyName}._func because ${propertyName} is a property. You can config getter/setter spies via ${propertyName}._get and ${propertyName}._set`); },
