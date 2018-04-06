@@ -1,6 +1,6 @@
 # Jasmine Mock Factory
 
-[![Build Status](https://api.travis-ci.org/chuanqisun/jasmine-mock-factory.svg?branch=master)](https://travis-ci.org/chuanqisun/jasmine-mock-factory) [![Coverage Status](https://coveralls.io/repos/github/henrysun918/jasmine-mock-factory/badge.svg?branch=master)](https://coveralls.io/github/henrysun918/jasmine-mock-factory?branch=master)
+[![Build Status](https://api.travis-ci.org/chuanqisun/jasmine-mock-factory.svg?branch=master)](https://travis-ci.org/chuanqisun/jasmine-mock-factory) [![Coverage Status](https://coveralls.io/repos/github/chuanqisun/jasmine-mock-factory/badge.svg?branch=master)](https://coveralls.io/github/chuanqisun/jasmine-mock-factory?branch=master)
 
 A Jasmine test util that uses a TypeScript class or an instance of a class to create a mock instance of that class.
 
