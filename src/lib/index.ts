@@ -35,6 +35,11 @@ class DynamicBase<T extends object> {
                 return this.spyProxy;
             }
 
+            if (typeof propertyName !== 'string') {
+                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only mock "string" typed properties so getting ${propertyName.toString()} will return undefined`);
+                return;
+            }
+
             this.ensureSpy(propertyName);
 
             return this.stub[propertyName];
@@ -42,6 +47,11 @@ class DynamicBase<T extends object> {
         set: (target, propertyName: keyof T, value, receiver) => {
             if (propertyName === '_spy') {
                 throw Error('Cannot modify _spy. It is part of the MockFactory');
+            }
+
+            if (typeof propertyName !== 'string') {
+                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only mock "string" typed properties so setting ${propertyName.toString()} will be ignored`);
+                return true;
             }
 
             if (typeof this.prototype[propertyName] === 'function') {
@@ -58,7 +68,7 @@ class DynamicBase<T extends object> {
 
     // create a spy before it is read from the spyFacade
     private spyProxyHanlder = {
-        get: (target: T, propertyName: keyof T, receiver) => {
+        get: (target: T, propertyName: keyof T & string, receiver) => {
             this.ensureSpy(propertyName);
 
             return this.spy[propertyName];
@@ -73,7 +83,7 @@ class DynamicBase<T extends object> {
         this.spyProxy = new Proxy(Object.create(null), this.spyProxyHanlder);
     }
 
-    private ensureSpy(propertyName: keyof T): void {
+    private ensureSpy(propertyName: keyof T & string): void {
         // create spy if needed
         if (!this.spy[propertyName]) {
             try {

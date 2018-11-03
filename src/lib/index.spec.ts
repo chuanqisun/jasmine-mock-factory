@@ -14,6 +14,16 @@ interface ISubClass extends IBaseClass {
     subPublicMethod1(arg1: string): number;
 }
 
+const symbol1 = Symbol('1');
+const symbol2 = Symbol('2');
+const symbol3 = Symbol('3');
+const symbol4 = Symbol('4');
+const symbol5 = Symbol('5');
+const symbol6 = Symbol('6');
+const symbol7 = Symbol('7');
+const symbol8 = Symbol('8');
+const symbol9 = Symbol('9');
+
 class BaseClass implements IBaseClass {
     public publicProperty1: string;
     protected protectedProperty1: string;
@@ -43,6 +53,18 @@ class BaseClass implements IBaseClass {
     public set publicGetterSetterProperty1(value: string) { }
     protected set protectedGetterSetterProperty1(value: string) { }
     private set privateGetterSetterProperty1(value: string) { }
+
+    /* index type of number, these cannot be handled by jasmine yet */
+    public [symbol1] = 'someValue';
+    protected [symbol2] = 'someValue';
+    private [symbol3] = 'someValue';
+    public set [symbol4](value: string) { };
+    protected set [symbol5](value: string) { };
+    private set [symbol6](value: string) { };
+    public get [symbol7]() { return 'someValue' };
+    protected get [symbol8]() { return 'someValue' };
+    private get [symbol9]() { return 'someValue' };
+
 
     public publicMethod1(arg1: string): number {
         return 2;
@@ -308,6 +330,22 @@ describe('Using mocks', () => {
                 expect(commonInstance['nonExistProperty']).toBeUndefined();
             });
 
+            it('should return undefined for properties with index type of "symbol"', () => {
+                const warnSpy = spyOn(console, 'warn');
+
+                expect(commonInstance[symbol1]).toBeUndefined();
+                expect(commonInstance[symbol2]).toBeUndefined();
+                expect(commonInstance[symbol3]).toBeUndefined();
+                expect(commonInstance[symbol4]).toBeUndefined();
+                expect(commonInstance[symbol5]).toBeUndefined();
+                expect(commonInstance[symbol6]).toBeUndefined();
+                expect(commonInstance[symbol7]).toBeUndefined();
+                expect(commonInstance[symbol8]).toBeUndefined();
+                expect(commonInstance[symbol9]).toBeUndefined();
+
+                expect(warnSpy).toHaveBeenCalledTimes(9);
+            });
+
             it('should persist first modifications on properties', () => {
                 commonInstance.publicProperty1 = 'new-value';
                 expect(commonInstance.publicProperty1).toBe('new-value');
@@ -383,6 +421,31 @@ describe('Using mocks', () => {
                 commonInstance['nonExistProperty'] = 'new-value-1';
                 commonInstance['nonExistProperty'] = 'new-value-2';
                 expect(commonInstance['nonExistProperty']).toBe('new-value-2');
+            });
+
+            it('should ignore modifications to properties with index type of "symbol"', () => {
+                const warnSpy = spyOn(console, 'warn');
+
+                commonInstance[symbol1] = 'new-value';
+                expect(commonInstance[symbol1]).toBeUndefined();
+                commonInstance[symbol2] = 'new-value';
+                expect(commonInstance[symbol2]).toBeUndefined();
+                commonInstance[symbol3] = 'new-value';
+                expect(commonInstance[symbol3]).toBeUndefined();
+                commonInstance[symbol4] = 'new-value';
+                expect(commonInstance[symbol4]).toBeUndefined();
+                commonInstance[symbol5] = 'new-value';
+                expect(commonInstance[symbol5]).toBeUndefined();
+                commonInstance[symbol6] = 'new-value';
+                expect(commonInstance[symbol6]).toBeUndefined();
+                commonInstance[symbol7] = 'new-value';
+                expect(commonInstance[symbol7]).toBeUndefined();
+                commonInstance[symbol8] = 'new-value';
+                expect(commonInstance[symbol8]).toBeUndefined();
+                commonInstance[symbol9] = 'new-value';
+                expect(commonInstance[symbol9]).toBeUndefined();
+
+                expect(warnSpy).toHaveBeenCalledTimes(18); // set and get both trigger the warning
             });
 
             it('should spy getters before they are used', () => {
