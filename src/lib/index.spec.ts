@@ -448,6 +448,18 @@ describe('Using mocks', () => {
                 expect(warnSpy).toHaveBeenCalledTimes(18); // set and get both trigger the warning
             });
 
+            it('should throw error when named properties of type "symbol" are accessed through the spy facade', () => {
+                expect(() => (commonInstance._spy as any)[symbol1]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol2]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol3]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol4]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol5]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol6]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol7]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol8]).toThrowError();
+                expect(() => (commonInstance._spy as any)[symbol9]).toThrowError();
+            });
+
             it('should spy getters before they are used', () => {
                 expect(commonInstance._spy.publicProperty1._get).not.toHaveBeenCalled();
                 expect(commonInstance._spy.publicGetterProperty1._get).not.toHaveBeenCalled();

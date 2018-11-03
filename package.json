@@ -1,6 +1,6 @@
 {
   "name": "jasmine-mock-factory",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A Jasmine helper for creating mocked classes",
   "license": "MIT",
   "author": "Chuanqi Sun",

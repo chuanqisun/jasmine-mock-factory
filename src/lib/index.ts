@@ -36,7 +36,7 @@ class DynamicBase<T extends object> {
             }
 
             if (typeof propertyName !== 'string') {
-                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only mock "string" typed properties so getting ${propertyName.toString()} will return undefined`);
+                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only spy "string" named properties so getting ${propertyName.toString()} will return undefined`);
                 return;
             }
 
@@ -50,7 +50,7 @@ class DynamicBase<T extends object> {
             }
 
             if (typeof propertyName !== 'string') {
-                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only mock "string" typed properties so setting ${propertyName.toString()} will be ignored`);
+                console.warn(`${propertyName.toString()} is a "${typeof propertyName}" type property. Jasmine can only spy "string" named properties so setting ${propertyName.toString()} will be ignored`);
                 return true;
             }
 
@@ -68,13 +68,17 @@ class DynamicBase<T extends object> {
 
     // create a spy before it is read from the spyFacade
     private spyProxyHanlder = {
-        get: (target: T, propertyName: keyof T & string, receiver) => {
+        get: (target: T, propertyName: keyof T, receiver) => {
+            if (typeof propertyName !== 'string') {
+                throw Error(`${propertyName.toString()} is a "${typeof propertyName}" named property. Jasmine can only spy "string" so only "string" named properties expose the _spy interface`);
+            }
+
             this.ensureSpy(propertyName);
 
             return this.spy[propertyName];
         },
         set: (target, propertyName: keyof T, value, receiver) => {
-            throw Error(`Cannot change _spy.${propertyName}, because it is part of the MockFactory`);
+            throw Error(`Cannot change _spy.${propertyName.toString()}, because it is part of the MockFactory`);
         },
     }
 
