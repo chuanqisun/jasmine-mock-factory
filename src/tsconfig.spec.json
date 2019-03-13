@@ -7,7 +7,9 @@
     "baseUrl": "",
     "types": [
       "jasmine"
-    ]
+    ],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
   },
   "files": [
     "test.ts"
