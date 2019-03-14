@@ -6,7 +6,7 @@ export interface SpyFacade<T> {
 
 export declare type Spied<T> = {
     [K in keyof T]: SpiedMember;
-}
+};
 
 export interface SpiedAny {
     [id: string]: SpiedMember;
@@ -30,7 +30,7 @@ class DynamicBase<T extends object> {
 
     // create a spy before it is directly read/written
     private stubProxyHandler = {
-        get: (target: T, propertyName: keyof T, receiver) => {
+        get: (_target: T, propertyName: keyof T, _receiver) => {
             if (propertyName === '_spy') {
                 return this.spyProxy;
             }
@@ -44,7 +44,7 @@ class DynamicBase<T extends object> {
 
             return this.stub[propertyName];
         },
-        set: (target, propertyName: keyof T, value, receiver) => {
+        set: (_target, propertyName: keyof T, value, _receiver) => {
             if (propertyName === '_spy') {
                 throw Error('Cannot modify _spy. It is part of the MockFactory');
             }
@@ -68,7 +68,7 @@ class DynamicBase<T extends object> {
 
     // create a spy before it is read from the spyFacade
     private spyProxyHanlder = {
-        get: (target: T, propertyName: keyof T, receiver) => {
+        get: (_target: T, propertyName: keyof T, _receiver) => {
             if (typeof propertyName !== 'string') {
                 throw Error(`${propertyName.toString()} is a "${typeof propertyName}" named property. Jasmine can only spy "string" so only "string" named properties expose the _spy interface`);
             }
@@ -77,7 +77,7 @@ class DynamicBase<T extends object> {
 
             return this.spy[propertyName];
         },
-        set: (target, propertyName: keyof T, value, receiver) => {
+        set: (_target, propertyName: keyof T, _value, _receiver) => {
             throw Error(`Cannot change _spy.${propertyName.toString()}, because it is part of the MockFactory`);
         },
     }
@@ -132,7 +132,7 @@ class DynamicBase<T extends object> {
         // we add getters and setters to all properties to make the read and write spy-able
         const descriptor = {
             get: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ () => {},
-            set: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ (value) => {},
+            set: /* istanbul ignore next: Can't reach. spyOnProperty() requires its presence to install spies */ (_value) => {},
             enumerable: true,
             configurable: true, // required by spyOnProperty
         };
