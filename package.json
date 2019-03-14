@@ -1,6 +1,6 @@
 {
   "name": "jasmine-mock-factory",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "A Jasmine helper for creating mocked classes",
   "license": "MIT",
   "author": "Chuanqi Sun",
@@ -30,7 +30,7 @@
     "@angular/platform-browser-dynamic": "^4.0.0",
     "@angular/router": "^4.0.0",
     "codelyzer": "~3.0.1",
-    "core-js": "^2.4.1",
+    "core-js": "^2.6.5",
     "coveralls": "^2.13.1",
     "jasmine-core": "~2.6.2",
     "jasmine-spec-reporter": "~4.1.0",
@@ -45,7 +45,7 @@
     "ts-node": "~3.0.4",
     "tslint": "~5.3.2",
     "typescript": "~2.9.0",
-    "zone.js": "^0.8.4"
+    "zone.js": "^0.8.29"
   },
   "keywords": [
     "mock",
