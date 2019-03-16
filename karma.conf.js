@@ -1,38 +1,27 @@
-// Karma configuration file, see link for more information
-// https://karma-runner.github.io/0.13/config/configuration-file.html
-
-module.exports = function (config) {
-  var testingBrowsers = [];
-  if (process.env.TRAVIS) {
-    testingBrowsers = ['Firefox']
-  } else {
-    testingBrowsers = ['Chrome', 'Firefox'];
-  }
-
+module.exports = function(config) {
   config.set({
     basePath: '',
-    frameworks: ['jasmine', '@angular/cli'],
-    plugins: [
-      require('karma-jasmine'),
-      require('karma-chrome-launcher'),
-      require('karma-firefox-launcher'),
-      require('karma-coverage-istanbul-reporter'),
-      require('karma-jasmine-html-reporter'),
-      require('@angular/cli/plugins/karma')
-    ],
-    client:{
-      clearContext: false // leave Jasmine Spec Runner output visible in browser
-    },
-    coverageIstanbulReporter: {
-      reports: [ 'html', 'lcovonly' ],
-      fixWebpackSourcePaths: true
-    },
-    reporters: ['progress', 'kjhtml'],
-    port: 9876,
+    browsers: ['Chrome'],
+    client:{ clearContext: false }, // leave Jasmine Spec Runner output visible in browser 
     colors: true,
-    logLevel: config.LOG_INFO,
-    autoWatch: true,
-    browsers: testingBrowsers,
-    singleRun: false
+    concurrency: Infinity,
+    files: ['src/index.spec.ts', 'dist/index.js'],
+    frameworks: ['jasmine', 'karma-typescript'],
+    karmaTypescriptConfig: {
+      compilerOptions: {
+          allowJs: true,
+      },
+      tsconfig: "./tsconfig.spec.json",
+      reports: {
+        "html": "coverage",
+        "lcovonly": "coverage",
+      },
+    },
+    port: 9876,
+    preprocessors: {
+      'dist/index.js': 'karma-typescript',
+      'src/index.spec.ts': 'karma-typescript',
+    },
+    reporters: ["karma-typescript", 'progress'],
   });
 };
