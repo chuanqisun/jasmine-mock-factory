@@ -1,4 +1,4 @@
-import { MockFactory, Mock } from './index';
+import { MockFactory, Mock } from '../dist';
 
 interface IBaseClass {
     publicProperty1: string;
@@ -208,7 +208,7 @@ describe('Using mocks', () => {
 
         it('should persist modification on properties', () => {
             (mockWindow as any).document = 'foobar';
-            expect(mockWindow.document).toBe('foobar');
+            expect(mockWindow.document as any).toBe('foobar');
         });
     });
 

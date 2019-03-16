@@ -1,13 +1,14 @@
 {
+  "allowJs": true,
   "compilerOptions": {
-      "outDir": "dist",
+      "outDir": "test-out",
       "module": "commonjs",
       "target": "es2015",
       "sourceMap": true,
-      "declaration": true
   },
   "include": [
-    "src/index.ts"
+    "src/index.spec.ts",
+    "dist/index.js",
   ],
   "lib": [
     "es2016",

@@ -1,4 +1,7 @@
-**/*
-
-!index.ts
-!src/lib/index.ts
+src/
+.editorconfig
+.travis.yml
+karma.conf.js
+tsconfig.json
+tsconfig.spec.json
+coverage/

@@ -43,9 +43,8 @@ it('should pass', () => {
 
 ## Prerequisite
 
-This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
-
-This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and only contains `*.ts` files that must be compiled with a [TypeScript](https://www.typescriptlang.org/) compiler.
+ * This util is built with and for [Jasmine](https://jasmine.github.io/) test framework. Basic understanding of Jasmine is assumed.
+ * This util requires [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy).
 
 
 ## Usage
@@ -181,7 +180,6 @@ const mockLocation = MockFactory.create(location);
 ```
 
 ## Develope
-This project is built with [Angular CLI](https://cli.angular.io/)
-
-### Running unit tests
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+ * `npm install` to install dev dependencies
+ * `npm run build` to build the library
+ * `npm run test` to test the library
